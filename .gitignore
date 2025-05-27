@@ -1,0 +1,70 @@
+/target/
+# Eclipse
+.bin/
+.idea/
+.settings/
+.classpath
+.project
+.mvn/
+target/
+
+# Maven
+target/
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.tmp
+*.bak
+*.swp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Logs
+*.log
+*.log.*
+
+# Eclipse specific
+*.launch
+*.pydevproject
+*.prefs
+
+# Maven wrapper
+!/.mvn/wrapper/maven-wrapper.jar
+!/.mvn/wrapper/maven-wrapper.properties
+!/.mvn/wrapper/MavenWrapperDownloader.java
+
+# Ignore Eclipse workspace files
+*.snap
+*.prefs
+*.metadata
+*.log
+*.tmp
+*.bak
+*.swp
+# Ignore IntelliJ IDEA files
+.idea/  
+*.iml
+# Ignore NetBeans files
+nbproject/

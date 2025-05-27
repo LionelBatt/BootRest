@@ -1,0 +1,67 @@
+name: Java CI with Maven and AWS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-artifact
+        path: target/*.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: build-artifact
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-3
+
+    - name: Deploy to Elastic Beanstalk
+      run: |
+        aws elasticbeanstalk create-application-version \
+          --application-name projet-restaurant \
+          --version-label "build-${{ github.run_number }}" \
+          --source-bundle S3Bucket=prod-resto,S3Key=app/testProj.jar
+
+        aws elasticbeanstalk update-environment \
+          --application-name projet-restaurant \
+          --environment-name Projet-restaurant-env \
+          --version-label "build-${{ github.run_number }}"

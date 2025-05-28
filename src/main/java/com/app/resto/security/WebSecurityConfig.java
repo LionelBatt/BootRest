@@ -46,9 +46,8 @@ public class WebSecurityConfig {
 				.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(handler))
 				.sessionManagement(
 						sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(authorizeRequests -> authorizeRequests
-						.requestMatchers("/api/auth/**", "/api/test/all").permitAll() // Use 'requestMatchers' instead
-																						// of 'antMatchers'
+				.authorizeRequests(authorizeRequests -> authorizeRequests
+						.antMatchers("/api/auth/**", "/api/test/all").permitAll() // Use 'requestMatchers' instead																						// of 'antMatchers'
 						.anyRequest().authenticated());
 		// Add the JWT Token filter before the UsernamePasswordAuthenticationFilter
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

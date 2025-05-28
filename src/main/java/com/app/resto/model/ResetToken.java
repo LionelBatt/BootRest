@@ -2,7 +2,7 @@ package com.app.resto.model;
 
 import java.util.Date;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 public class ResetToken {

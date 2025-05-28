@@ -1,6 +1,6 @@
 package com.app.resto.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "users")

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main]
+    branches: [ main ]
 
 jobs:
   build:
@@ -29,24 +29,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-artifact
-        path: target/*.jar
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: build-artifact
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -55,11 +37,12 @@ jobs:
         aws-region: eu-west-3
 
     - name: Deploy to Elastic Beanstalk
+      if: success()
       run: |
         aws elasticbeanstalk create-application-version \
           --application-name projet-restaurant \
           --version-label "build-${{ github.run_number }}" \
-          --source-bundle S3Bucket=prod-resto,S3Key=app/testProj.jar
+          --source-bundle S3Bucket=prod-resto,S3Key=app/testProj.war
 
         aws elasticbeanstalk update-environment \
           --application-name projet-restaurant \

@@ -41,10 +41,10 @@ jobs:
       run: |
         aws elasticbeanstalk create-application-version \
           --application-name projet-restaurant \
-          --version-label "build-${{ github.run_number }}-$(date +'%Y%m%d%H%M%S')" \
+          --version-label "version-${{ github.run_number }}-$(date +'%Y%m%d%H%M%S')" \
           --source-bundle S3Bucket=prod-resto,S3Key=app/testProj.war
 
         aws elasticbeanstalk update-environment \
           --application-name projet-restaurant \
           --environment-name Projet-restaurant-env \
-          --version-label "build-${{ github.run_number }}-$(date +'%Y%m%d%H%M%S')"
+          --version-label "version-${{ github.run_number }}-$(date +'%Y%m%d%H%M%S')"

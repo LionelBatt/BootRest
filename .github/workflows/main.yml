@@ -40,11 +40,11 @@ jobs:
       if: success()
       run: |
         aws elasticbeanstalk create-application-version \
-          --application-name projet-restaurant \
+          --application-name API-SPRING \
           --version-label "version-${{ github.run_number }}" \
-          --source-bundle S3Bucket=prod-resto,S3Key=app/testProj.war
+          --source-bundle S3Bucket=prod-resto,S3Key=app/resto-0.0.1-SNAPSHOT.jar
 
         aws elasticbeanstalk update-environment \
-          --application-name projet-restaurant \
-          --environment-name Projet-restaurant-env \
+          --application-name API-SPRING \
+          --environment-name API-SPRING-env \
           --version-label "version-${{ github.run_number }}"

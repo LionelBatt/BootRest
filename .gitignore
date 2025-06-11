@@ -70,3 +70,5 @@ Thumbs.db
 nbproject/
 mvnw
 mvnw.cmd
+
+.fake

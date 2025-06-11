@@ -40,7 +40,7 @@ jobs:
       if: success()
       run: |
         aws elasticbeanstalk create-application-version \
-          --application-name API-SPRING \
+          --application-name voyage-project \
           --version-label "build-${{ github.run_number }}" \
           --source-bundle S3Bucket=prod-resto,S3Key=app/resto-1.0.0-SNAPSHOT.jar
 

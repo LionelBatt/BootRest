@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -22,12 +23,13 @@ public class Order {
 	@Column(nullable = false)
 	private int userId;
 	
-    @OneToOne
+    @OneToOne @JoinColumn(name="trip_Id")
 	@Column(nullable = false)
 	private Trip trip;
 	
 	@Column(name = "number_of_passenger", nullable = false)
 	private int numberOfPassagers;
+	
 	
 	@Column(name = "options_list", nullable = false)
 	private List<Option> options;

@@ -2,6 +2,8 @@ package com.app.travel.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +40,7 @@ public class Users {
 	private String address;
 
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private Role role = Role.USER; // Le role par défaut est USER
 	
 	@Version
@@ -46,12 +49,12 @@ public class Users {
 	public Users() {
 	}
 
-	public Users(String username, String password, String email, Role role) {
-		this.username = username;
-		this.password = password;
-		this.email = email;
-		this.role = role;
-	}
+	// public Users(String username, String password, String email, Role role) {
+	// 	this.username = username;
+	// 	this.password = password;
+	// 	this.email = email;
+	// 	this.role = role;
+	// }
 	public Users(String username, String password, String email, String phoneNumber, String name, String surname, String address) {
 		this.username = username;
 		this.password = password;
@@ -145,8 +148,8 @@ public class Users {
 	@Override
 	public String toString() {
 		return "Users [userId=" + userId + ", username=" + username + ", password=" + password + ", email=" + email
-				+ ", phoneNumber=" + phoneNumber + ", name=" + name + ", surname=" + surname + ", address=" + address
-				+ ", role=" + role + "]";
+				+ ", phoneNumber=" + phoneNumber + ", name=" + name + ", surname=" + surname + ", address=" + address + "]";
+		// + ", role=" + role + "]";
 	}
 	
 }

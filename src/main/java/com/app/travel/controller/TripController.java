@@ -101,8 +101,8 @@ public class TripController {
     @GetMapping("/destination/{destination}")
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestination(@PathVariable String destination) {
         try {
-            City destination_enum = City.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestination(destination_enum);
+            City destinationEnum = City.valueOf(destination.toUpperCase());
+            List<Trip> trips = tripRepository.findByDestination(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour la destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

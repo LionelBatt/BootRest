@@ -58,13 +58,14 @@ public class Trip {
     public void setId(int id) {
         this.id = id;
     }
-
+    
     public City getDestination() {  
-        return destination;    
+        return destination;
     }
+    
     public void setDestination(City destination) {
-         this.destination = destination; 
-        }
+        this.destination = destination;
+    }
 
     public Users getUser() {   
         return user;   

@@ -77,7 +77,6 @@ public class AuthController {
 		}
 	}
 	
-	//http://localhost:8080/travel/api/auth/signup
 	@PostMapping("/signup")
 	public ApiResponse<String> registerUser(@RequestBody Users user) {
 		if (repos.existsByUsername(user.getUsername())) {

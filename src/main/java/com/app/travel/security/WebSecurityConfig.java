@@ -75,22 +75,13 @@ public class WebSecurityConfig {
                 .requestMatchers("/webjars/**").permitAll()
                 .requestMatchers("/docs/**", "/swagger/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                
-                // Console H2 pour développement
-                .requestMatchers("/h2-console/**").permitAll()
-                
+                      
                 // Endpoints publics d'authentification
                 .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
                 .requestMatchers("/api/password-recovery/**").permitAll()
-                
-                // Endpoints publics des destinations (lecture seule)
-                .requestMatchers("/api/destinations/**").permitAll()
-                
+                          
                 // Endpoints pour les ressources statiques
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
-                
-                // Endpoints des réservations (nécessitent une authentification)
-                .requestMatchers("/api/bookings/**").authenticated()
                 
                 // Endpoints des trips
                 .requestMatchers("/trips/**").authenticated()

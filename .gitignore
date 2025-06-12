@@ -72,4 +72,14 @@ nbproject/
 mvnw
 mvnw.cmd
 
+# VS Code Configuration Files
+.vscode/
+*.code-workspace
+
+# Spring Boot Configuration Files (contain sensitive data)
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+**/application.properties
+**/application-*.properties
+
 .fake

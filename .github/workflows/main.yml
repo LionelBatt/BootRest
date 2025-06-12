@@ -106,23 +106,11 @@ jobs:
 
     - name: 📤 Upload JAR vers S3
       run: |
-        # Upload uniquement du JAR (Dockerfile sera créé directement sur EC2)
         aws s3 cp travel-agency-${{ env.APP_VERSION }}.jar s3://${{ env.S3_BUCKET }}/app/
-        
         echo "✅ JAR uploadé vers S3"
 
-    - name: 🚀 Déploiement sur EC2
+    - name: 📝 Création du script de déploiement
       run: |
-        # Récupérer l'IP publique de l'instance EC2
-        EC2_IP=$(aws ec2 describe-instances \
-          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
-          --query 'Reservations[0].Instances[0].PublicIpAddress' \
-          --output text)
-        
-        echo "🌐 IP de l'instance EC2: $EC2_IP"
-        echo "🔑 Déploiement via SSH..."
-        
-        # Créer un script de déploiement avec Dockerfile embarqué
         cat > deploy_embedded.sh << 'EOF'
         #!/bin/bash
         set -e
@@ -152,15 +140,18 @@ jobs:
             docker rm "$CONTAINER_NAME" || true
         fi
         
-        # Télécharger le JAR depuis S3 avec fallback
+        # Télécharger le JAR depuis S3
         echo "📥 Téléchargement du JAR..."
         if command -v aws >/dev/null 2>&1; then
-            echo "📦 Tentative avec AWS CLI..."
+            echo "📦 Utilisation d'AWS CLI..."
             sudo aws s3 cp "s3://$S3_BUCKET/app/$JAR_FILE" ./ || {
                 echo "⚠️  AWS CLI a échoué, utilisation de curl..."
                 sudo curl -f -o "$JAR_FILE" "https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/$JAR_FILE"
             }
         else
+            echo "📦 Utilisation de curl..."
+            sudo curl -f -o "$JAR_FILE" "https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/$JAR_FILE"
+        fi
             echo "📦 Utilisation de curl..."
             sudo curl -f -o "$JAR_FILE" "https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/$JAR_FILE"
         fi
@@ -173,27 +164,27 @@ jobs:
         
         echo "✅ JAR téléchargé: $(ls -lh $JAR_FILE)"
         
-        # Créer le Dockerfile directement sur l'instance
+        # Créer le Dockerfile
         echo "📝 Création du Dockerfile..."
-        {
-          echo "FROM openjdk:21-jdk-slim"
-          echo "RUN groupadd -r appuser && useradd -r -g appuser appuser"
-          echo "WORKDIR /app"
-          echo "RUN mkdir -p /app/logs /app/data && chown -R appuser:appuser /app"
-          echo "COPY travel-agency-1.0.1-SNAPSHOT.jar app.jar"
-          echo "RUN chown appuser:appuser app.jar"
-          echo "USER appuser"
-          echo "EXPOSE 8080"
-          echo "VOLUME [\"/app/logs\", \"/app/data\"]"
-          echo "ENV SERVER_PORT=8080 LOGGING_LEVEL_ROOT=INFO LOGGING_FILE_PATH=/app/logs/application.log JAVA_OPTS=\"-Xms512m -Xmx1024m -XX:+UseG1GC\""
-          echo "ENTRYPOINT [\"sh\", \"-c\", \"java \\\$JAVA_OPTS -jar /app/app.jar\"]"
-        } > Dockerfile
+        cat > Dockerfile << 'DOCKERFILE_END'
+        FROM openjdk:21-jdk-slim
+        RUN groupadd -r appuser && useradd -r -g appuser appuser
+        WORKDIR /app
+        RUN mkdir -p /app/logs /app/data && chown -R appuser:appuser /app
+        COPY travel-agency-1.0.1-SNAPSHOT.jar app.jar
+        RUN chown appuser:appuser app.jar
+        USER appuser
+        EXPOSE 8080
+        VOLUME ["/app/logs", "/app/data"]
+        ENV SERVER_PORT=8080 LOGGING_LEVEL_ROOT=INFO LOGGING_FILE_PATH=/app/logs/application.log JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+        ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+        DOCKERFILE_END
         
         # Construire l'image Docker
         echo "🔨 Construction de l'image Docker..."
         docker build -t "$IMAGE_NAME" .
         
-        # Démarrer le conteneur avec configuration complète
+        # Démarrer le conteneur
         echo "🚀 Démarrage du conteneur..."
         docker run -d \
             --name "$CONTAINER_NAME" \
@@ -204,14 +195,11 @@ jobs:
             -e SERVER_PORT=8080 \
             -e LOGGING_FILE_PATH=/app/logs/application.log \
             -e LOGGING_LEVEL_ROOT=INFO \
-            -e DB_URL="\${DB_URL:-jdbc:h2:mem:travel_prod}" \
-            -e DB_USER="\${DB_USER:-sa}" \
-            -e DB_PASSWORD="\${DB_PASSWORD:-}" \
-            -e JWT_SECRET="\${JWT_SECRET:-change_this_secret_in_production}" \
-            -e MAIL_HOST="\${MAIL_HOST:-smtp.gmail.com}" \
-            -e MAIL_PORT="\${MAIL_PORT:-587}" \
-            -e MAIL_USER="\${MAIL_USER:-}" \
-            -e MAIL_PASSWORD="\${MAIL_PASSWORD:-}" \
+            -e "DB_URL=jdbc:h2:mem:travel_prod" \
+            -e "DB_USER=sa" \
+            -e "JWT_SECRET=change_this_secret_in_production" \
+            -e "MAIL_HOST=smtp.gmail.com" \
+            -e "MAIL_PORT=587" \
             "$IMAGE_NAME"
         
         # Vérifier le déploiement
@@ -219,8 +207,8 @@ jobs:
         sleep 10
         if docker ps | grep "$CONTAINER_NAME" > /dev/null; then
             echo "✅ Conteneur démarré avec succès"
-            PUBLIC_IP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-            echo "🌐 Application disponible sur : http://\$PUBLIC_IP:8080/travel"
+            PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+            echo "🌐 Application disponible sur : http://$PUBLIC_IP:8080/travel"
             docker logs --tail 10 "$CONTAINER_NAME"
         else
             echo "❌ Erreur lors du démarrage du conteneur"
@@ -232,10 +220,21 @@ jobs:
         EOF
         
         chmod +x deploy_embedded.sh
+
+    - name: 🚀 Déploiement sur EC2
+      run: |
+        # Récupérer l'IP publique de l'instance EC2
+        EC2_IP=$(aws ec2 describe-instances \
+          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+          --query 'Reservations[0].Instances[0].PublicIpAddress' \
+          --output text)
+        
+        echo "🌐 IP de l'instance EC2: $EC2_IP"
+        echo "🔑 Déploiement via SSH..."
         
         # Exécuter via SSH
         scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_embedded.sh ubuntu@$EC2_IP:/tmp/
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "/tmp/deploy_embedded.sh"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "bash /tmp/deploy_embedded.sh"
         
         echo "🎉 Déploiement terminé avec succès !"
 
@@ -266,4 +265,5 @@ jobs:
         echo "❌ L'application ne répond pas après 5 minutes"
         echo "🔍 Status du container:"
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'docker ps -a && docker logs travel-agency-app --tail 20'
+        exit 1
         exit 1

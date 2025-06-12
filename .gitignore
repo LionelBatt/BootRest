@@ -25,6 +25,11 @@ buildNumber.properties
 *.bak
 *.swp
 
+# Configuration files (may contain sensitive data)
+application.properties
+application-*.properties
+*.properties
+
 # OS generated files
 .DS_Store
 .DS_Store?

@@ -272,11 +272,15 @@ jobs:
         
         echo "✅ Image Docker créée"
         
-        # Afficher les variables d'environnement disponibles
-        echo "🔍 Variables d'environnement disponibles:"
+        # Vérifier le fichier .env et afficher son contenu
+        echo "📄 Contenu du fichier .env:"
+        cat "\$ENV_FILE" | head -10
+        
+        # Afficher les variables d'environnement chargées
+        echo "🔍 Variables d'environnement chargées:"
         env | grep -E "(DB_|JWT_|MAIL_)" || echo "Aucune variable d'environnement configurée"
         
-        # Démarrer le conteneur avec le fichier .env
+        # Démarrer le conteneur avec variables explicites
         echo "🚀 Démarrage du conteneur..."
         docker run -d \
             --name "\$CONTAINER_NAME" \
@@ -284,7 +288,18 @@ jobs:
             -p 8080:8080 \
             -v "\$LOGS_DIR:/app/logs:rw" \
             -v "\$DATA_DIR:/app/data:rw" \
-            --env-file "\$ENV_FILE" \
+            -e "DB_URL=\$DB_URL" \
+            -e "DB_USER=\$DB_USER" \
+            -e "DB_PASSWORD=\$DB_PASSWORD" \
+            -e "JWT_SECRET=\$JWT_SECRET" \
+            -e "JWT_EXPIRATION=\$JWT_EXPIRATION" \
+            -e "MAIL_HOST=\$MAIL_HOST" \
+            -e "MAIL_PORT=\$MAIL_PORT" \
+            -e "MAIL_USER=\$MAIL_USER" \
+            -e "MAIL_PASSWORD=\$MAIL_PASSWORD" \
+            -e "SERVER_PORT=8080" \
+            -e "LOGGING_LEVEL_ROOT=INFO" \
+            -e "LOGGING_FILE_PATH=/app/logs/application.log" \
             "\$IMAGE_NAME"
         
         # Attendre un peu et vérifier le statut

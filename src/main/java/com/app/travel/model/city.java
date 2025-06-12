@@ -1,6 +1,6 @@
 package com.app.travel.model;
 
-public enum city {
+public enum City {
     PARIS,
     LONDON
 }

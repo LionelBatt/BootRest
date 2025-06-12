@@ -17,7 +17,6 @@ import com.app.travel.model.Users;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -39,7 +38,7 @@ public class AuthController {
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {
 		try {
 			Authentication authentication = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
+					.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 			String token = jwtUtils.generateToken(userDetails.getUsername());
 			return ApiResponse.success("Connexion réussie", token);
@@ -51,11 +50,19 @@ public class AuthController {
 	//http://localhost:8080/travel/api/auth/signup
 	@PostMapping("/signup")
 	public ApiResponse<String> registerUser(@RequestBody Users user) {
-		if (repos.existsByUserName(user.getUserName())) {
+		if (repos.existsByUsername(user.getUsername())) {
 			return ApiResponse.error("Erreur d'inscription", "Le nom d'utilisateur est déjà pris!");
 		}
 		try {
-			Users newUser = new Users(user.getEmail(), user.getUserName(), encoder.encode(user.getPassword()), null, null, null, null, null);
+			Users newUser = new Users(
+				user.getUsername(), 
+				encoder.encode(user.getPassword()), 
+				user.getEmail(),
+				user.getPhoneNumber(),
+				user.getName(),
+				user.getSurname(), 
+				user.getAddress()			
+			);
 			repos.save(newUser);
 			return ApiResponse.success("Utilisateur enregistré avec succès!", "Compte créé");
 		} catch (Exception e) {

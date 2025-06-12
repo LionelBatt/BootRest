@@ -16,8 +16,8 @@ public class Users {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int userId;
 	
-	@Column(name = "user_name", nullable = false, unique = true)
-	private String userName;
+	@Column(nullable = false)
+	private String username;
 	
 	@Column(nullable = false)
 	private String password;
@@ -25,7 +25,7 @@ public class Users {
 	@Column(nullable = false, unique = true)
 	private String email;
 	
-	@Column(name = "phone_number", nullable = true, unique = true)
+	@Column(name = "phone_number", nullable = true)
 	private String phoneNumber;
 
 	@Column(nullable = false)
@@ -38,24 +38,28 @@ public class Users {
 	private String address;
 
 	@Column(nullable = false)
-	private role role;
+	private Role role = Role.USER; // Le role par défaut est USER
 	
 	@Version
 	private int version;
 
 	public Users() {
 	}
-	
-	public Users(String userName, String password, String email, String phoneNumber, String name, String surname,
-			String address, com.app.travel.model.role role) {
-		this.userName = userName;
+
+	public Users(String username, String password, String email, Role role) {
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.role = role;
+	}
+	public Users(String username, String password, String email, String phoneNumber, String name, String surname, String address) {
+		this.username = username;
 		this.password = password;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 		this.name = name;
 		this.surname = surname;
 		this.address = address;
-		this.role = role;
 	}
 
 	public int getUserId() {
@@ -66,12 +70,12 @@ public class Users {
 		this.userId = userId;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getPassword() {
@@ -122,11 +126,11 @@ public class Users {
 		this.address = address;
 	}
 
-	public role getRole() {
+	public Role getRole() {
 		return role;
 	}
 
-	public void setRole(role role) {
+	public void setRole(Role role) {
 		this.role = role;
 	}
 	
@@ -140,7 +144,7 @@ public class Users {
 
 	@Override
 	public String toString() {
-		return "Users [userId=" + userId + ", userName=" + userName + ", password=" + password + ", email=" + email
+		return "Users [userId=" + userId + ", username=" + username + ", password=" + password + ", email=" + email
 				+ ", phoneNumber=" + phoneNumber + ", name=" + name + ", surname=" + surname + ", address=" + address
 				+ ", role=" + role + "]";
 	}

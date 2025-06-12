@@ -80,11 +80,14 @@ public class WebSecurityConfig {
                 .requestMatchers("/v3/api-docs").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/webjars/**").permitAll()
-                
-                // Static resources
+                .requestMatchers("/travel/v3/api-docs/**").permitAll() 
+                .requestMatchers("/travel/v3/api-docs").permitAll()
+                .requestMatchers("/travel/swagger-ui/**").permitAll()
+                .requestMatchers("/travel/swagger-ui.html").permitAll()
+                // Endpoints pour les ressources statiques
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                 
-                // All other requests require authentication
+                //Tous les autres requêtes nécessitent une authentification
                 .anyRequest().authenticated()
             );
 

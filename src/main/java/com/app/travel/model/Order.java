@@ -1,6 +1,7 @@
 package com.app.travel.model;
-import java.util.List;
+
 import java.sql.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,6 +59,7 @@ public class Order {
 	private int version;
 
 	public Order() {
+		super();
 	}
 
 	public Order(int userId, Trip trip, int numberOfPassagers, List<Option> options, Date tripStartDate,Date travelTime, Date creationDate, double total) {

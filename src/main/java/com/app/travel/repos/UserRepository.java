@@ -6,13 +6,13 @@ import com.app.travel.model.Users;
 
 public interface UserRepository extends JpaRepository <Users,  Integer> {
 
-	 Users findByUserName(String userName);
+	 Users findByUsername(String username);
 
 	 Users findByEmail(String email);
 
 	 Users findByPhoneNumber(String phoneNumber);
 
-	boolean existsByUserName(String userName);
+	boolean existsByUsername(String username);
 
 	boolean existsByEmail(String email);
 

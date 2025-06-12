@@ -1,14 +1,19 @@
 package com.app.travel.model;
 
+import java.util.Date;
+import java.util.List;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import jakarta.persistence.*;
-import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "trips")
@@ -23,11 +28,13 @@ public class Trip {
     private Users user;
 
     @Enumerated(EnumType.STRING)
-    private city destination;
+    private City destination;
+
     private Date minimumDuration;
     private String description;
     private List<String> packageOptions;
     private int unitPrice;
+
     @Version
     private int version;
 
@@ -35,7 +42,7 @@ public class Trip {
 
     }
     
-    public Trip( city destination, Users user, Date minimumDuration, String description, List<String> packageOptions, int unitPrice) {
+    public Trip( City destination, Users user, Date minimumDuration, String description, List<String> packageOptions, int unitPrice) {
         this.user = user;
         this.destination = destination;
         this.minimumDuration = minimumDuration;
@@ -52,10 +59,10 @@ public class Trip {
         this.id = id;
     }
 
-    public city getDestination() {  
+    public City getDestination() {  
         return destination;    
     }
-    public void setDestination(city destination) {
+    public void setDestination(City destination) {
          this.destination = destination; 
         }
 

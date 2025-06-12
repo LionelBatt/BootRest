@@ -60,8 +60,8 @@ export MAIL_PASSWORD=votre_mot_de_passe_application
 ### 1. Cloner le projet
 
 ```bash
-git clone <votre-repo-url>
-cd TravelAgencyAPI
+git clone https://github.com/LionelBatt/BootRest.git
+cd BootRest
 ```
 
 ### 2. Compiler le projet
@@ -74,7 +74,7 @@ mvn clean compile
 
 #### lancement de l'application:
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn spring-boot:run
 ```
 
 ### 4. Créer un JAR exécutable
@@ -213,16 +213,6 @@ src/
 │       └── application-prod.properties
 └── test/                   # Tests unitaires et d'intégration
 ```
-
-### Bonnes pratiques
-
-- Utilisez les DTOs pour les échanges API
-- Validez toujours les données d'entrée
-- Loggez les actions importantes (réservations, paiements)
-- Écrivez des tests pour vos endpoints
-- Respectez les conventions REST
-- Gérez les cas d'erreur métier (places limitées, dates invalides)
-
 
 ## 📄 Licence
 

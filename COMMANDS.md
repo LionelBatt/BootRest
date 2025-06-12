@@ -23,20 +23,13 @@ mvn test
 mvn spring-boot:run 
 
 # Démarrage avec JAR exécutable
-java -jar target/resto-1.0.0-SNAPSHOT.jar
+java -jar target/travel-agency-1.0.1-SNAPSHOT.jar
 ```
 
 ### Tests Unitaires
 ```bash
 # Tous les tests
 mvn test
-
-# Tests d'une classe spécifique
-mvn test -Dtest=UserControllerTest
-
-# Tests avec couverture
-mvn test jacoco:report
-```
 
 ### Tests d'API avec curl
 ```bash
@@ -49,7 +42,7 @@ curl -X POST http://localhost:8080/resto/api/auth/signup \
   -d '{"username":"test","email":"test@test.com","password":"password123"}'
 
 # Connexion
-curl -X POST http://localhost:8080/resto/api/auth/signin \
+curl -X POST http://localhost:8080/resto/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","password":"password123"}'
 

@@ -1,4 +1,5 @@
 package com.app.travel.model;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -56,5 +57,9 @@ public class Option {
 
     public void setPrix(double prix){
         this.prix = prix;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }

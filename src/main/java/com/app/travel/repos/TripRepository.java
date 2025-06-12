@@ -1,13 +1,15 @@
 package com.app.travel.repos;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.app.travel.model.Trip;
-import com.app.travel.model.city;
 import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.app.travel.model.City;
+import com.app.travel.model.Trip;
 
 public interface TripRepository extends JpaRepository<Trip, Integer> {
 
-    List<Trip> findByDestination(city destination);
+    List<Trip> findByDestination(City destination);
 
     //IL ya un bug avec la ligne suivante, il faut la corriger:
 

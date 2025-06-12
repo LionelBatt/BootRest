@@ -237,7 +237,6 @@ jobs:
             LOGGING_LEVEL_ROOT=INFO \
             LOGGING_FILE_PATH=/app/logs/application.log \
             JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC" \
-            SPRING_PROFILES_ACTIVE=prod
         
         # Health check
         HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
@@ -274,15 +273,14 @@ jobs:
             -e SERVER_PORT=8080 \
             -e LOGGING_FILE_PATH=/app/logs/application.log \
             -e LOGGING_LEVEL_ROOT=DEBUG \
-            -e SPRING_PROFILES_ACTIVE=prod \
-            -e "DB_URL=\${DB_URL:-jdbc:h2:mem:testdb}" \
-            -e "DB_USER=\${DB_USER:-sa}" \
-            -e "DB_PASSWORD=\${DB_PASSWORD:-}" \
-            -e "JWT_SECRET=\${JWT_SECRET:-defaultsecretkey12345678901234567890}" \
-            -e "MAIL_HOST=\${MAIL_HOST:-smtp.gmail.com}" \
-            -e "MAIL_PORT=\${MAIL_PORT:-587}" \
-            -e "MAIL_USER=\${MAIL_USER:-}" \
-            -e "MAIL_PASSWORD=\${MAIL_PASSWORD:-}" \
+            -e "DB_URL=\${DB_URL}" \
+            -e "DB_USER=\${DB_USER}" \
+            -e "DB_PASSWORD=\${DB_PASSWORD}" \
+            -e "JWT_SECRET=\${JWT_SECRET}" \
+            -e "MAIL_HOST=\${MAIL_HOST"} \
+            -e "MAIL_PORT=\${MAIL_PORT" \
+            -e "MAIL_USER=\${MAIL_USER}" \
+            -e "MAIL_PASSWORD=\${MAIL_PASSWORD}" \
             "\$IMAGE_NAME"
         
         # Attendre un peu et vérifier le statut

@@ -17,8 +17,7 @@ public class Trip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
-    
+  
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid")
     private Users user;
@@ -32,8 +31,10 @@ public class Trip {
     @Version
     private int version;
 
+    public Trip() {
 
-
+    }
+    
     public Trip( city destination, Users user, Date minimumDuration, String description, List<String> packageOptions, int unitPrice) {
         this.user = user;
         this.destination = destination;
@@ -43,25 +44,61 @@ public class Trip {
         this.unitPrice = unitPrice;
     }
 
-    public int getId() {  return id;   }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public city getDestination() {  return destination;    }
-    public void setDestination(city destination) { this.destination = destination; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public Users getUser() {   return user;   }
-    public void setUser(Users user) {  this.user = user;  }
+    public city getDestination() {  
+        return destination;    
+    }
+    public void setDestination(city destination) {
+         this.destination = destination; 
+        }
 
-    public Date getMinimumDuration() { return minimumDuration;   }
-    public void setMinimumDuration(Date minimumDuration) {this.minimumDuration = minimumDuration; }
+    public Users getUser() {   
+        return user;   
+    }
+    public void setUser(Users user) {  
+        this.user = user;  
+    }
 
-    public String getDescription() { return description; }
+    public Date getMinimumDuration() { 
+        return minimumDuration;   
+    }
 
-    public void setDescription(String description) { this.description = description;  }
+    public void setMinimumDuration(Date minimumDuration) {
+        this.minimumDuration = minimumDuration; 
+    }
 
-    public List<String> getPackageOptions() { return packageOptions;}
-    public void setPackageOptions(List<String> packageOptions) { this.packageOptions = packageOptions;}
+    public String getDescription() { 
+        return description; 
+    }
 
-    public int getUnitPrice() {   return unitPrice;  }
-    public void setUnitPrice(int unitPrice) { this.unitPrice = unitPrice; }
+    public void setDescription(String description) { 
+        this.description = description;  
+    }
+
+    public List<String> getPackageOptions() { 
+        return packageOptions;
+    }
+    public void setPackageOptions(List<String> packageOptions) { 
+        this.packageOptions = packageOptions;
+    }
+
+    public int getUnitPrice() {   
+        return unitPrice;  
+    }
+    public void setUnitPrice(int unitPrice) { 
+        this.unitPrice = unitPrice; 
+    }
+    public int getVersion() { 
+        return version; 
+    }
+    public void setVersion(int version) { 
+        this.version = version; 
+    }
 }

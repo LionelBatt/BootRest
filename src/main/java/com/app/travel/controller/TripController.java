@@ -1,11 +1,16 @@
 package com.app.travel.controller;
 
+import com.app.travel.dto.ApiResponse;
 import com.app.travel.model.Trip;
+import com.app.travel.model.city;
 import com.app.travel.repos.TripRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @RestController
@@ -16,42 +21,106 @@ public class TripController {
     private TripRepository tripRepository;
 
     @GetMapping("")
-    public List<Trip> findAll() {
-        return tripRepository.findAll();
+    public ResponseEntity<ApiResponse<List<Trip>>> findAll() {
+        try {
+            List<Trip> trips = tripRepository.findAll();
+            return ResponseEntity.ok(ApiResponse.success("Trips récupérés avec succès", trips));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération des trips", e.getMessage()));
+        }
     }
 
     @PostMapping("")
-    public void create(@RequestBody Trip trip) {
-        tripRepository.save(trip);
+    public ResponseEntity<ApiResponse<Trip>> create(@RequestBody Trip trip) {
+        try {
+            Trip savedTrip = tripRepository.save(trip);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Trip créé avec succès", savedTrip));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Erreur lors de la création du trip", e.getMessage()));
+        }
     }
 
     @PutMapping("")
-    public void update(@RequestBody Trip trip) {
-        tripRepository.save(trip);
+    public ResponseEntity<ApiResponse<Trip>> update(@RequestBody Trip trip) {
+        try {
+            if (trip.getId() == 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("ID du trip requis pour la mise à jour"));
+            }
+            
+            Optional<Trip> existingTrip = tripRepository.findById(trip.getId());
+            if (existingTrip.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Trip non trouvé avec l'ID: " + trip.getId()));
+            }
+            
+            Trip updatedTrip = tripRepository.save(trip);
+            return ResponseEntity.ok(ApiResponse.success("Trip mis à jour avec succès", updatedTrip));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la mise à jour du trip", e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
-    public Trip findById(@PathVariable int id) {
-        return tripRepository.findById(id).orElse(null);
+    public ResponseEntity<ApiResponse<Trip>> findById(@PathVariable int id) {
+        try {
+            Optional<Trip> trip = tripRepository.findById(id);
+            if (trip.isPresent()) {
+                return ResponseEntity.ok(ApiResponse.success("Trip trouvé", trip.get()));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Trip non trouvé avec l'ID: " + id));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche du trip", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        tripRepository.deleteById(id);
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable int id) {
+        try {
+            Optional<Trip> existingTrip = tripRepository.findById(id);
+            if (existingTrip.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Trip non trouvé avec l'ID: " + id));
+            }
+            
+            tripRepository.deleteById(id);
+            return ResponseEntity.ok(ApiResponse.success("Trip supprimé avec succès"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la suppression du trip", e.getMessage()));
+        }
     }
 
-    @GetMapping("/country/{country}")
-    public List<Trip> findByCountry(@PathVariable String country) {
-        return tripRepository.findByDestination_Country(country);
+    @GetMapping("/destination/{destination}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByDestination(@PathVariable String destination) {
+        try {
+            city cityEnum = city.valueOf(destination.toUpperCase());
+            List<Trip> trips = tripRepository.findByDestination(cityEnum);
+            return ResponseEntity.ok(ApiResponse.success("Trips trouvés pour la destination: " + destination, trips));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Destination invalide: " + destination + ". Destinations disponibles: PARIS, LONDON"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche par destination", e.getMessage()));
+        }
     }
 
-    @GetMapping("/continent/{continent}")
-    public List<Trip> findByContinent(@PathVariable String continent) {
-        return tripRepository.findByDestination_Continent(continent);
+    @GetMapping("/trips/user/{userId}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByUserId(@PathVariable Integer userId) {
+        try {
+            List<Trip> trips = tripRepository.findByUser_UserId(userId);
+            return ResponseEntity.ok(ApiResponse.success("Trips trouvés pour l'utilisateur: " + userId, trips));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur", e.getMessage()));
+        }
     }
-
-    @GetMapping("/city/{city}/one")
-    public Trip findOneByCity(@PathVariable String city) {
-        return tripRepository.findFirstByDestination_City(city);
-}
 }

@@ -12,7 +12,7 @@ IMAGE_NAME="travel-agency:latest"
 APP_DIR="/opt/travel-agency"
 LOGS_DIR="/var/log/travel-agency"
 DATA_DIR="/var/lib/travel-agency"
-S3_BUCKET="prod-travel-agency"
+S3_BUCKET="prod-resto"
 
 echo "🚀 Début du déploiement Docker de l'application Travel Agency"
 echo "📅 $(date)"
@@ -60,7 +60,6 @@ docker run -d \
     "$IMAGE_NAME"
 
 echo "✅ Déploiement terminé avec succès !"
-echo "🌐 Application accessible sur http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/travel"
 echo "📋 Logs disponibles dans : $LOGS_DIR"
 echo "💾 Données persistées dans : $DATA_DIR"
 

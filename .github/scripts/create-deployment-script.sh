@@ -178,15 +178,21 @@ docker run -d \
     "$IMAGE_NAME"
 
 # Attendre et vérifier le statut
-echo "⏳ Attente du démarrage (30 secondes)..."
-sleep 30
+echo "⏳ Attente du démarrage (45 secondes)..."
+sleep 45
 
 # Diagnostic du conteneur
 echo "🔍 Status du conteneur:"
 docker ps -a -f name="$CONTAINER_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
-echo -e "\n📝 Logs du conteneur:"
-docker logs --tail 20 "$CONTAINER_NAME" 2>&1
+echo -e "\n📝 Logs du conteneur (dernières 100 lignes):"
+docker logs --tail 100 "$CONTAINER_NAME" 2>&1
+
+echo -e "\n⏸️  Pause de 15 secondes pour examiner les logs..."
+sleep 15
+
+echo -e "\n📝 Logs complets du conteneur:"
+docker logs "$CONTAINER_NAME" 2>&1
 
 # Vérifier si le conteneur tourne
 if docker ps | grep "$CONTAINER_NAME" > /dev/null; then

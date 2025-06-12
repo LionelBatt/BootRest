@@ -110,9 +110,6 @@ jobs:
         aws s3 cp travel-agency-${{ env.APP_VERSION }}.jar s3://${{ env.S3_BUCKET }}/app/
         aws s3 cp Dockerfile s3://${{ env.S3_BUCKET }}/app/
         
-        # Upload des scripts
-        aws s3 cp deploy-ec2.sh s3://${{ env.S3_BUCKET }}/scripts/
-        
         echo "✅ Fichiers uploadés vers S3"
 
     - name: 🚀 Déploiement sur EC2
@@ -126,30 +123,64 @@ jobs:
         echo "🌐 IP de l'instance EC2: $EC2_IP"
         echo "🔑 Déploiement via SSH..."
         
-        # Créer le script de déploiement local
-        cat > deploy_ssh.sh << 'EOF'
+        # Créer un script de déploiement simplifié
+        cat > deploy_direct.sh << 'EOF'
         #!/bin/bash
         set -e
         
-        echo "🚀 Début du déploiement via SSH..."
+        # Configuration
+        APP_NAME="travel-agency"
+        CONTAINER_NAME="travel-agency-app"
+        IMAGE_NAME="travel-agency:latest"
+        APP_DIR="/opt/travel-agency"
+        S3_BUCKET="prod-resto"
+        AWS_REGION="eu-west-3"
         
-        # Télécharger le script de déploiement
-        curl -s "https://s3.${{ env.AWS_REGION }}.amazonaws.com/${{ env.S3_BUCKET }}/scripts/deploy-ec2.sh" -o /tmp/deploy-ec2.sh
-        chmod +x /tmp/deploy-ec2.sh
+        echo "🚀 Début du déploiement direct..."
         
-        # Exécuter le déploiement
-        sudo /tmp/deploy-ec2.sh
+        # Créer les répertoires
+        sudo mkdir -p "$APP_DIR"
+        cd "$APP_DIR"
         
-        echo "✅ Déploiement SSH terminé"
+        # Arrêter le conteneur existant
+        if docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
+            echo "🛑 Arrêt du conteneur existant..."
+            docker stop "$CONTAINER_NAME" || true
+            docker rm "$CONTAINER_NAME" || true
+        fi
+        
+        # Télécharger les fichiers directement
+        echo "📥 Téléchargement des fichiers..."
+        sudo curl -o ./Dockerfile "https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/Dockerfile"
+        sudo curl -o ./travel-agency-1.0.1-SNAPSHOT.jar "https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/travel-agency-1.0.1-SNAPSHOT.jar"
+        
+        # Vérifier les téléchargements
+        if [[ ! -f "./Dockerfile" ]] || [[ ! -f "./travel-agency-1.0.1-SNAPSHOT.jar" ]]; then
+            echo "❌ Erreur de téléchargement"
+            exit 1
+        fi
+        
+        # Construire et démarrer
+        echo "🔨 Construction de l'image Docker..."
+        sudo docker build -t "$IMAGE_NAME" .
+        
+        echo "🚀 Démarrage du conteneur..."
+        sudo docker run -d \
+            --name "$CONTAINER_NAME" \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            "$IMAGE_NAME"
+        
+        echo "✅ Déploiement terminé"
         EOF
         
-        chmod +x deploy_ssh.sh
+        chmod +x deploy_direct.sh
         
         # Copier et exécuter via SSH
-        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_ssh.sh ubuntu@$EC2_IP:/tmp/
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "chmod +x /tmp/deploy_ssh.sh && /tmp/deploy_ssh.sh"
+        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_direct.sh ubuntu@$EC2_IP:/tmp/
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "chmod +x /tmp/deploy_direct.sh && /tmp/deploy_direct.sh"
         
-        echo "🎉 Déploiement SSH terminé avec succès !"
+        echo "🎉 Déploiement terminé avec succès !"
 
     - name: 🏥 Vérification de santé de l'application
       run: |

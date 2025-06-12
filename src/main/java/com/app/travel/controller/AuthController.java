@@ -55,7 +55,7 @@ public class AuthController {
 			return ApiResponse.error("Erreur d'inscription", "Le nom d'utilisateur est déjà pris!");
 		}
 		try {
-			Users newUser = new Users(user.getEmail(), user.getUserName(), encoder.encode(user.getPassword()));
+			Users newUser = new Users(user.getEmail(), user.getUserName(), encoder.encode(user.getPassword()), null, null, null, null, null);
 			repos.save(newUser);
 			return ApiResponse.success("Utilisateur enregistré avec succès!", "Compte créé");
 		} catch (Exception e) {

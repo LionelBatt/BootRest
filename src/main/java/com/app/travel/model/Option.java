@@ -24,7 +24,9 @@ public class Option {
     @Version
     private int version;
 
-    public Option(){}
+    public Option(){
+        super();
+    }
 
     public Option(String desc, double prix){
         super();

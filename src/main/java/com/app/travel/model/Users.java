@@ -1,10 +1,16 @@
 package com.app.travel.model;
 
+import java.util.Collection;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -39,6 +45,17 @@ public class Users {
 
 	@Column(nullable = false)
 	private role role;
+
+	@Column(nullable = false)
+	private CardInfo cardInfo;
+
+	@ManyToMany
+	@JoinTable(name="Bookmarks_listings", joinColumns = @JoinColumn(name = "User_ID"), inverseJoinColumns = @JoinColumn(name = "Trip_ID"))
+	private Collection<Trip> bookmarks;
+
+	@OneToMany(mappedBy = "userId")
+	private Collection<Order> orders;
+	
 	
 	@Version
 	private int version;

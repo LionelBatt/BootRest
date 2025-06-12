@@ -160,6 +160,7 @@ jobs:
         
         # Créer les répertoires
         sudo mkdir -p "\$APP_DIR" "\$LOGS_DIR" "\$DATA_DIR"
+        sudo chown -R ubuntu:ubuntu "\$APP_DIR"
         sudo chown -R 1000:1000 "\$LOGS_DIR" "\$DATA_DIR"
         cd "\$APP_DIR"
         
@@ -175,7 +176,7 @@ jobs:
         JAR_URL="https://s3.\$AWS_REGION.amazonaws.com/\$S3_BUCKET/app/\$JAR_FILE"
         echo "🔗 URL: \$JAR_URL"
         
-        sudo curl -f -L -o "\$JAR_FILE" "\$JAR_URL"
+        curl -f -L -o "\$JAR_FILE" "\$JAR_URL"
         
         # Vérifier le téléchargement
         if [[ ! -f "./\$JAR_FILE" ]]; then

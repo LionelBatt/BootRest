@@ -85,8 +85,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/travel/swagger-ui/**").permitAll()
                 .requestMatchers("/travel/swagger-ui.html").permitAll()
                 // Endpoints pour les ressources statiques
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
-                
+                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()            
                 //Tous les autres requêtes nécessitent une authentification
                 .anyRequest().authenticated()
             );

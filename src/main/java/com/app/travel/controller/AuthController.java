@@ -1,5 +1,8 @@
 package com.app.travel.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +19,7 @@ import com.app.travel.dto.ApiResponse;
 import com.app.travel.model.Users;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
+import com.app.travel.service.LoginAttemptService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,17 +37,43 @@ public class AuthController {
 	
 	@Autowired
 	JwtUtil jwtUtils;
+	
+	@Autowired
+	LoginAttemptService loginAttemptService;
 
 	@PostMapping("/login")
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {
+		String username = user.getUsername();
+
+		// Vérifier si le compte est verrouillé
+		if (loginAttemptService.isBlocked(username)) {
+			LocalDateTime unlockTime = loginAttemptService.getUnlockTime(username);
+			if (unlockTime != null) {
+				String unlockTimeStr = unlockTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+				return ApiResponse.error("Compte verrouillé", "Trop de tentatives. Réessayez après " + unlockTimeStr);
+			}
+		}	
 		try {
-			Authentication authentication = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+			// Authentifier l'utilisateur
+			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, user.getPassword()));
 			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 			String token = jwtUtils.generateToken(userDetails.getUsername());
+			
+			// Connexion réussie - réinitialiser les tentatives
+			loginAttemptService.loginSucceeded(username);
 			return ApiResponse.success("Connexion réussie", token);
+			
 		} catch (Exception e) {
-			return ApiResponse.error("Échec de l'authentification", "Nom d'utilisateur ou mot de passe incorrect");
+
+			loginAttemptService.loginFailed(username);
+			int remaining = loginAttemptService.getRemainingAttempts(username);
+			String message = "Nom d'utilisateur ou mot de passe incorrect";
+
+			if (remaining > 0) {
+				message += " (Tentatives restantes: " + remaining + ")";
+			}
+			
+			return ApiResponse.error("Échec de l'authentification", message);
 		}
 	}
 	

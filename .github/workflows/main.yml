@@ -280,6 +280,52 @@ jobs:
         echo "🔍 Variables d'environnement chargées:"
         env | grep -E "(DB_|JWT_|MAIL_)" || echo "Aucune variable d'environnement configurée"
         
+        # Vérifier que les variables critiques sont définies
+        echo "🔍 Vérification des variables critiques..."
+        MISSING_VARS=""
+        
+        if [[ -z "\$JWT_SECRET" ]]; then
+            echo "❌ JWT_SECRET manquant"
+            MISSING_VARS="JWT_SECRET "
+        else
+            echo "✅ JWT_SECRET défini (longueur: \${#JWT_SECRET})"
+        fi
+        
+        if [[ -z "\$DB_URL" ]]; then
+            echo "❌ DB_URL manquant"
+            MISSING_VARS="\${MISSING_VARS}DB_URL "
+        else
+            echo "✅ DB_URL défini: \$DB_URL"
+        fi
+        
+        if [[ -z "\$DB_USER" ]]; then
+            echo "❌ DB_USER manquant"
+            MISSING_VARS="\${MISSING_VARS}DB_USER "
+        else
+            echo "✅ DB_USER défini: \$DB_USER"
+        fi
+        
+        if [[ -z "\$DB_PASSWORD" ]]; then
+            echo "❌ DB_PASSWORD manquant"
+            MISSING_VARS="\${MISSING_VARS}DB_PASSWORD "
+        else
+            echo "✅ DB_PASSWORD défini (longueur: \${#DB_PASSWORD})"
+        fi
+        
+        if [[ -n "\$MISSING_VARS" ]]; then
+            echo "❌ Variables manquantes: \$MISSING_VARS"
+            echo "💡 Vérifiez le contenu de \$ENV_FILE"
+            echo "📝 Contenu complet du fichier .env:"
+            cat "\$ENV_FILE"
+            echo "💡 Exemple de fichier .env minimal:"
+            echo "DB_URL=jdbc:postgresql://localhost:5432/travel_db"
+            echo "DB_USER=your_user"
+            echo "DB_PASSWORD=your_password"
+            echo "JWT_SECRET=your_very_long_secret_key_here_at_least_32_chars"
+            echo "JWT_EXPIRATION=86400000"
+            exit 1
+        fi
+        
         # Démarrer le conteneur avec variables explicites
         echo "🚀 Démarrage du conteneur..."
         docker run -d \

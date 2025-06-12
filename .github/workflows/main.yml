@@ -277,7 +277,7 @@ jobs:
             -e "DB_USER=\${DB_USER}" \
             -e "DB_PASSWORD=\${DB_PASSWORD}" \
             -e "JWT_SECRET=\${JWT_SECRET}" \
-            -e "MAIL_HOST=\${MAIL_HOST"} \
+            -e "MAIL_HOST=\${MAIL_HOST}" \
             -e "MAIL_PORT=\${MAIL_PORT}" \
             -e "MAIL_USER=\${MAIL_USER}" \
             -e "MAIL_PASSWORD=\${MAIL_PASSWORD}" \

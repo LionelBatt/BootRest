@@ -155,8 +155,22 @@ jobs:
         S3_BUCKET="${{ env.S3_BUCKET_TEMP }}"
         AWS_REGION="${{ env.AWS_REGION }}"
         JAR_FILE="travel-agency-${{ env.APP_VERSION }}.jar"
+        ENV_FILE="/opt/travel-agency/.env"
         
         echo "🚀 Début du déploiement Travel Agency..."
+        
+        # Vérifier et charger les variables d'environnement
+        if [[ -f "\$ENV_FILE" ]]; then
+            echo "🔐 Chargement des variables d'environnement existantes..."
+            set -a
+            source "\$ENV_FILE"
+            set +a
+            echo "✅ Variables d'environnement chargées depuis \$ENV_FILE"
+        else
+            echo "❌ Fichier .env non trouvé à \$ENV_FILE !"
+            echo "💡 Créez le fichier avec vos secrets d'abord."
+            exit 1
+        fi
         
         # Créer les répertoires avec les bonnes permissions
         echo "📁 Création des répertoires..."
@@ -232,11 +246,11 @@ jobs:
         EXPOSE 8080
         VOLUME ["/app/logs", "/app/data"]
         
-        # Variables d'environnement avec valeurs par défaut
+        # Variables d'environnement par défaut SANS secrets
         ENV SERVER_PORT=8080 \
             LOGGING_LEVEL_ROOT=INFO \
             LOGGING_FILE_PATH=/app/logs/application.log \
-            JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC" \
+            JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
         
         # Health check
         HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
@@ -262,7 +276,7 @@ jobs:
         echo "🔍 Variables d'environnement disponibles:"
         env | grep -E "(DB_|JWT_|MAIL_)" || echo "Aucune variable d'environnement configurée"
         
-        # Démarrer le conteneur avec configuration étendue
+        # Démarrer le conteneur avec le fichier .env
         echo "🚀 Démarrage du conteneur..."
         docker run -d \
             --name "\$CONTAINER_NAME" \
@@ -270,17 +284,7 @@ jobs:
             -p 8080:8080 \
             -v "\$LOGS_DIR:/app/logs:rw" \
             -v "\$DATA_DIR:/app/data:rw" \
-            -e SERVER_PORT=8080 \
-            -e LOGGING_FILE_PATH=/app/logs/application.log \
-            -e LOGGING_LEVEL_ROOT=DEBUG \
-            -e "DB_URL=\${DB_URL}" \
-            -e "DB_USER=\${DB_USER}" \
-            -e "DB_PASSWORD=\${DB_PASSWORD}" \
-            -e "JWT_SECRET=\${JWT_SECRET}" \
-            -e "MAIL_HOST=\${MAIL_HOST}" \
-            -e "MAIL_PORT=\${MAIL_PORT}" \
-            -e "MAIL_USER=\${MAIL_USER}" \
-            -e "MAIL_PASSWORD=\${MAIL_PASSWORD}" \
+            --env-file "\$ENV_FILE" \
             "\$IMAGE_NAME"
         
         # Attendre un peu et vérifier le statut

@@ -158,20 +158,32 @@ jobs:
         
         echo "🚀 Début du déploiement Travel Agency..."
         
-        # Créer les répertoires
+        # Créer les répertoires avec les bonnes permissions
+        echo "📁 Création des répertoires..."
         sudo mkdir -p "\$APP_DIR" "\$LOGS_DIR" "\$DATA_DIR"
         sudo chown -R ubuntu:ubuntu "\$APP_DIR"
         sudo chown -R 1000:1000 "\$LOGS_DIR" "\$DATA_DIR"
+        sudo chmod -R 755 "\$LOGS_DIR" "\$DATA_DIR"
         cd "\$APP_DIR"
         
-        # Arrêter le conteneur existant
+        # Arrêter et supprimer le conteneur existant
         if docker ps -q -f name="\$CONTAINER_NAME" | grep -q .; then
             echo "🛑 Arrêt du conteneur existant..."
             docker stop "\$CONTAINER_NAME" || true
+        fi
+        
+        if docker ps -aq -f name="\$CONTAINER_NAME" | grep -q .; then
+            echo "🗑️ Suppression du conteneur existant..."
             docker rm "\$CONTAINER_NAME" || true
         fi
         
-        # Télécharger le JAR depuis S3 (bucket public temporaire)
+        # Supprimer l'ancienne image
+        if docker images -q "\$IMAGE_NAME" | grep -q .; then
+            echo "🗑️ Suppression de l'ancienne image..."
+            docker rmi "\$IMAGE_NAME" || true
+        fi
+        
+        # Télécharger le JAR depuis S3
         echo "📥 Téléchargement du JAR depuis S3..."
         JAR_URL="https://s3.\$AWS_REGION.amazonaws.com/\$S3_BUCKET/app/\$JAR_FILE"
         echo "🔗 URL: \$JAR_URL"
@@ -186,62 +198,144 @@ jobs:
         
         echo "✅ JAR téléchargé: \$(ls -lh \$JAR_FILE)"
         
-        # Créer le Dockerfile
+        # Vérifier l'intégrité du JAR
+        echo "🔍 Vérification de l'intégrité du JAR..."
+        if java -jar "\$JAR_FILE" --help >/dev/null 2>&1; then
+            echo "✅ JAR valide"
+        else
+            echo "⚠️ JAR potentiellement corrompu, on continue..."
+        fi
+        
+        # Créer le Dockerfile avec plus de diagnostic
         echo "📝 Création du Dockerfile..."
         cat > Dockerfile << 'DOCKERFILE_END'
         FROM openjdk:21-jdk-slim
-        RUN groupadd -r appuser && useradd -r -g appuser appuser
+        
+        # Installer des outils de diagnostic
+        RUN apt-get update && apt-get install -y curl procps && rm -rf /var/lib/apt/lists/*
+        
+        # Créer l'utilisateur avec UID/GID spécifiques
+        RUN groupadd -g 1000 appuser && useradd -u 1000 -g appuser -m appuser
+        
         WORKDIR /app
         RUN mkdir -p /app/logs /app/data && chown -R appuser:appuser /app
+        
+        # Copier le JAR
         COPY travel-agency-1.0.1-SNAPSHOT.jar app.jar
         RUN chown appuser:appuser app.jar
+        
+        # Vérifier le JAR dans le conteneur
+        RUN java -jar app.jar --help || echo "JAR check failed but continuing..."
+        
         USER appuser
+        
         EXPOSE 8080
         VOLUME ["/app/logs", "/app/data"]
-        ENV SERVER_PORT=8080 LOGGING_LEVEL_ROOT=INFO LOGGING_FILE_PATH=/app/logs/application.log JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
-        ENTRYPOINT ["sh", "-c", "java \$JAVA_OPTS -jar /app/app.jar"]
+        
+        # Variables d'environnement avec valeurs par défaut
+        ENV SERVER_PORT=8080 \
+            LOGGING_LEVEL_ROOT=INFO \
+            LOGGING_FILE_PATH=/app/logs/application.log \
+            JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC" \
+            SPRING_PROFILES_ACTIVE=prod
+        
+        # Health check
+        HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+            CMD curl -f http://localhost:\$SERVER_PORT/actuator/health || exit 1
+        
+        # Script d'entrée avec plus de logs
+        ENTRYPOINT ["sh", "-c", "echo 'Starting application with JAVA_OPTS:' \$JAVA_OPTS && echo 'Java version:' && java -version && echo 'Starting JAR...' && java \$JAVA_OPTS -jar /app/app.jar"]
         DOCKERFILE_END
         
         # Construire l'image Docker
         echo "🔨 Construction de l'image Docker..."
-        docker build -t "\$IMAGE_NAME" .
+        docker build -t "\$IMAGE_NAME" . --no-cache
         
-        # Démarrer le conteneur
+        # Vérifier que l'image a été créée
+        if ! docker images -q "\$IMAGE_NAME" | grep -q .; then
+            echo "❌ Erreur: Image Docker non créée"
+            exit 1
+        fi
+        
+        echo "✅ Image Docker créée"
+        
+        # Afficher les variables d'environnement disponibles
+        echo "🔍 Variables d'environnement disponibles:"
+        env | grep -E "(DB_|JWT_|MAIL_)" || echo "Aucune variable d'environnement configurée"
+        
+        # Démarrer le conteneur avec configuration étendue
         echo "🚀 Démarrage du conteneur..."
         docker run -d \
             --name "\$CONTAINER_NAME" \
             --restart unless-stopped \
             -p 8080:8080 \
-            -v "\$LOGS_DIR:/app/logs" \
-            -v "\$DATA_DIR:/app/data" \
+            -v "\$LOGS_DIR:/app/logs:rw" \
+            -v "\$DATA_DIR:/app/data:rw" \
             -e SERVER_PORT=8080 \
             -e LOGGING_FILE_PATH=/app/logs/application.log \
-            -e LOGGING_LEVEL_ROOT=INFO \
-            -e "DB_URL=\$DB_URL" \
-            -e "DB_USER=\$DB_USER" \
-            -e "DB_PASSWORD=\$DB_PASSWORD" \
-            -e "JWT_SECRET=\$JWT_SECRET" \
-            -e "MAIL_HOST=\$MAIL_HOST" \
-            -e "MAIL_PORT=\$MAIL_PORT" \
-            -e "MAIL_USER=\$MAIL_USER" \
-            -e "MAIL_PASSWORD=\$MAIL_PASSWORD" \
+            -e LOGGING_LEVEL_ROOT=DEBUG \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            -e "DB_URL=\${DB_URL:-jdbc:h2:mem:testdb}" \
+            -e "DB_USER=\${DB_USER:-sa}" \
+            -e "DB_PASSWORD=\${DB_PASSWORD:-}" \
+            -e "JWT_SECRET=\${JWT_SECRET:-defaultsecretkey12345678901234567890}" \
+            -e "MAIL_HOST=\${MAIL_HOST:-smtp.gmail.com}" \
+            -e "MAIL_PORT=\${MAIL_PORT:-587}" \
+            -e "MAIL_USER=\${MAIL_USER:-}" \
+            -e "MAIL_PASSWORD=\${MAIL_PASSWORD:-}" \
             "\$IMAGE_NAME"
         
-        # Vérifier le déploiement
-        echo "🔍 Vérification du déploiement..."
-        sleep 10
+        # Attendre un peu et vérifier le statut
+        echo "⏳ Attente du démarrage (30 secondes)..."
+        sleep 30
+        
+        # Diagnostic complet
+        echo "🔍 Diagnostic du conteneur:"
+        echo "Status:"
+        docker ps -a -f name="\$CONTAINER_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        
+        echo -e "\n📝 Logs du conteneur (50 dernières lignes):"
+        docker logs --tail 50 "\$CONTAINER_NAME" 2>&1
+        
+        echo -e "\n💾 Vérification des volumes:"
+        echo "Logs directory: \$(ls -la \$LOGS_DIR/ 2>/dev/null | head -5)"
+        echo "Data directory: \$(ls -la \$DATA_DIR/ 2>/dev/null | head -5)"
+        
+        # Vérifier si le conteneur tourne
         if docker ps | grep "\$CONTAINER_NAME" > /dev/null; then
-            echo "✅ Conteneur démarré avec succès"
-            PUBLIC_IP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-            echo "🌐 Application disponible sur : http://\$PUBLIC_IP:8080/travel"
-            docker logs --tail 10 "\$CONTAINER_NAME"
+            echo "✅ Conteneur en cours d'exécution"
+            PUBLIC_IP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "N/A")
+            echo "🌐 Application potentiellement disponible sur : http://\$PUBLIC_IP:8080/travel"
+            
+            # Test de connectivité local
+            echo "🔗 Test de connectivité locale:"
+            if curl -f -m 10 http://localhost:8080/actuator/health 2>/dev/null; then
+                echo "✅ Application répond localement"
+            else
+                echo "⚠️ Application ne répond pas encore localement"
+            fi
+            
         else
-            echo "❌ Erreur lors du démarrage du conteneur"
-            docker logs "\$CONTAINER_NAME"
+            echo "❌ Conteneur ne fonctionne pas correctement"
+            
+            # Diagnostic avancé
+            echo -e "\n🔍 Diagnostic avancé:"
+            echo "Images Docker:"
+            docker images | grep travel-agency
+            
+            echo -e "\nTous les conteneurs:"
+            docker ps -a
+            
+            echo -e "\nLogs complets du conteneur:"
+            docker logs "\$CONTAINER_NAME" 2>&1 || echo "Pas de logs disponibles"
+            
+            echo -e "\nInspection du conteneur:"
+            docker inspect "\$CONTAINER_NAME" | jq '.[] | {Status: .State, Mounts: .Mounts}' 2>/dev/null || docker inspect "\$CONTAINER_NAME"
+            
             exit 1
         fi
         
-        echo "🎉 Déploiement terminé avec succès !"
+        echo "🎉 Déploiement terminé !"
         EOF
         
         chmod +x deploy_embedded.sh

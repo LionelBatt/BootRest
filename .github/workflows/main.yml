@@ -1,4 +1,4 @@
-name: Java CI with Maven and AWS
+name: Travel Agency CI/CD with Maven and EC2 Deployment
 
 on:
   push:
@@ -6,45 +6,179 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  AWS_REGION: eu-west-3
+  S3_BUCKET: prod-travel-agency
+  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+  APP_VERSION: 1.0.1-SNAPSHOT
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
+    name: Tests et Qualité du Code
+    
     steps:
-    - uses: actions/checkout@v2
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
 
-    - name: Set up JDK
-      uses: actions/setup-java@v2
+    - name: ☕ Configuration JDK 21
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Cache Maven packages
+    - name: 📦 Cache des dépendances Maven
       uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+    - name: 🧪 Exécution des tests
+      run: mvn -B test --file pom.xml
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+    - name: 📊 Génération du rapport de couverture
+      run: mvn -B jacoco:report --file pom.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    name: Construction de l'application
+    
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+
+    - name: ☕ Configuration JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: 📦 Cache des dépendances Maven
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: 🔨 Construction avec Maven
+      run: mvn -B package -DskipTests --file pom.xml
+
+    - name: 📋 Vérification de l'artifact
+      run: |
+        ls -la target/
+        echo "JAR créé: $(ls target/*.jar | grep -v original)"
+
+    - name: 💾 Sauvegarde de l'artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: travel-agency-jar
+        path: target/travel-agency-${{ env.APP_VERSION }}.jar
+        retention-days: 30
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    name: Déploiement sur EC2
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+
+    - name: 📦 Récupération de l'artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: travel-agency-jar
+        path: ./
+
+    - name: 🔧 Configuration des credentials AWS
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-3
+        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Deploy to Elastic Beanstalk
-      if: success()
+    - name: 🔑 Configuration de la clé SSH
       run: |
-        aws elasticbeanstalk create-application-version \
-          --application-name voyage-project \
-          --version-label "build-${{ github.run_number }}" \
-          --source-bundle S3Bucket=prod-resto,S3Key=app/resto-1.0.0-SNAPSHOT.jar
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text) >> ~/.ssh/known_hosts
 
-        aws elasticbeanstalk update-environment \
-          --application-name voyage-project \
-          --environment-name Voyage-project-env \
-          --version-label "build-${{ github.run_number }}"
+    - name: 📤 Upload vers S3
+      run: |
+        # Upload du JAR et Dockerfile
+        aws s3 cp travel-agency-${{ env.APP_VERSION }}.jar s3://${{ env.S3_BUCKET }}/app/
+        aws s3 cp Dockerfile s3://${{ env.S3_BUCKET }}/app/
+        
+        # Upload des scripts
+        aws s3 cp deploy-ec2.sh s3://${{ env.S3_BUCKET }}/scripts/
+        
+        echo "✅ Fichiers uploadés vers S3"
+
+    - name: 🚀 Déploiement sur EC2
+      run: |
+        # Récupérer l'IP publique de l'instance EC2
+        EC2_IP=$(aws ec2 describe-instances \
+          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+          --query 'Reservations[0].Instances[0].PublicIpAddress' \
+          --output text)
+        
+        echo "🌐 IP de l'instance EC2: $EC2_IP"
+        echo "🔑 Déploiement via SSH..."
+        
+        # Créer le script de déploiement local
+        cat > deploy_ssh.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Début du déploiement via SSH..."
+        
+        # Télécharger le script de déploiement
+        curl -s "https://s3.${{ env.AWS_REGION }}.amazonaws.com/${{ env.S3_BUCKET }}/scripts/deploy-ec2.sh" -o /tmp/deploy-ec2.sh
+        chmod +x /tmp/deploy-ec2.sh
+        
+        # Exécuter le déploiement
+        sudo /tmp/deploy-ec2.sh
+        
+        echo "✅ Déploiement SSH terminé"
+        EOF
+        
+        chmod +x deploy_ssh.sh
+        
+        # Copier et exécuter via SSH
+        scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_ssh.sh ubuntu@$EC2_IP:/tmp/
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "chmod +x /tmp/deploy_ssh.sh && /tmp/deploy_ssh.sh"
+        
+        echo "🎉 Déploiement SSH terminé avec succès !"
+
+    - name: 🏥 Vérification de santé de l'application
+      run: |
+        # Récupérer l'IP publique de l'instance EC2
+        EC2_IP=$(aws ec2 describe-instances \
+          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+          --query 'Reservations[0].Instances[0].PublicIpAddress' \
+          --output text)
+        
+        echo "🌐 IP de l'instance EC2: $EC2_IP"
+        
+        # Attendre que l'application soit prête
+        echo "⏳ Vérification de la santé de l'application..."
+        for i in {1..30}; do
+          if curl -f "http://$EC2_IP:8080/travel/api/test/all" > /dev/null 2>&1; then
+            echo "✅ Application Docker accessible et fonctionnelle !"
+            echo "🌐 URL: http://$EC2_IP:8080/travel"
+            echo "📚 Swagger: http://$EC2_IP:8080/travel/swagger-ui/index.html"
+            echo "🐳 Container status: $(ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'docker ps -f name=travel-agency-app --format "table {{.Names}}\t{{.Status}}"')"
+            exit 0
+          fi
+          echo "⏳ Tentative $i/30..."
+          sleep 10
+        done
+        
+        echo "❌ L'application ne répond pas après 5 minutes"
+        echo "🔍 Status du container:"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'docker ps -a && docker logs travel-agency-app --tail 20'
+        exit 1

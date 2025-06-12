@@ -1,14 +1,15 @@
-# # Resto API
+# Travel Agency API
 
-Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'un système de restaurant.
+Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage.
 
 ## 🚀 Fonctionnalités
 
 - **Authentification JWT** : Système d'authentification sécurisé avec tokens JWT
 - **Gestion des utilisateurs** : Inscription, connexion, réinitialisation de mot de passe
+- **Catalogue de voyages** : Gestion des destinations, séjours et packages touristiques
 - **Sécurité** : Protection des endpoints avec Spring Security
 - **Base de données** : Intégration MySQL avec JPA/Hibernate
-- **Email** : Service d'envoi d'emails pour la réinitialisation de mots de passe
+- **Email** : Service d'envoi d'emails pour confirmations et notifications
 - **Documentation API** : Interface Swagger/OpenAPI intégrée
 - **Validation** : Validation des données d'entrée
 - **Gestion d'erreurs** : Gestion centralisée des exceptions
@@ -23,6 +24,8 @@ Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestio
 - **JWT (JSON Web Tokens)**
 - **Maven**
 - **Swagger/OpenAPI 3**
+- **Docker**
+- **AWS (EC2, S3)**
 
 ## 📋 Prérequis
 
@@ -32,21 +35,14 @@ Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestio
 
 ## ⚙️ Configuration
 
-### 1. Base de données
 
-Créez une base de données MySQL :
-
-```sql
-CREATE DATABASE resto_dev;
-```
-
-### 2. Variables d'environnement
+### 1. Variables d'environnement
 
 Configurez les variables d'environnement suivantes :
 
 ```bash
 # Base de données
-export DB_URL=jdbc:mysql://localhost:3306/resto_dev?useSSL=false&serverTimezone=UTC
+export DB_URL=jdbc:mysql://localhost:3306/travel_agency_dev?useSSL=false&serverTimezone=UTC
 export DB_USER=root
 export DB_PASSWORD=votre_mot_de_passe
 
@@ -59,21 +55,13 @@ export MAIL_PORT=587
 export MAIL_USER=votre_email@gmail.com
 export MAIL_PASSWORD=votre_mot_de_passe_application
 ```
-
-### 3. Profils d'environnement
-
-L'application supporte plusieurs profils :
-
-- **dev** : Développement (base de données locale, logs détaillés)
-- **prod** : Production (configuration optimisée)
-
 ## 🚀 Installation et démarrage
 
 ### 1. Cloner le projet
 
 ```bash
 git clone <votre-repo-url>
-cd BootRest
+cd TravelAgencyAPI
 ```
 
 ### 2. Compiler le projet
@@ -84,44 +72,27 @@ mvn clean compile
 
 ### 3. Lancer l'application
 
-#### Mode développement :
+#### lancement de l'application:
 ```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-#### Mode production :
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
 ### 4. Créer un JAR exécutable
 
 ```bash
 mvn clean package
-java -jar target/resto-1.0.0-SNAPSHOT.jar
+java -jar target/travel-agency-1.0.1-SNAPSHOT.jar
 ```
 
 ## 📚 Documentation API
 
 Une fois l'application démarrée, accédez à la documentation Swagger à :
 
-- **Interface Swagger UI** : http://localhost:8080/app/swagger-ui.html  
-- **Spécification OpenAPI** : http://localhost:8080/app/api-docs
+- **Interface Swagger UI** : http://localhost:8080/travel/swagger-ui/index.html  
+- **Spécification OpenAPI** : http://localhost:8080/travel/v3/api-docs
 
-## 🔗 Endpoints principaux
-
-### Authentification
-- `POST /app/auth/register` - Inscription d'un nouvel utilisateur
-- `POST /app/auth/login` - Connexion utilisateur
-- `POST /app/auth/refresh` - Rafraîchissement du token
-
-### Gestion des mots de passe
-- `POST /app/password/forgot` - Demande de réinitialisation
-- `POST /app/password/reset` - Réinitialisation du mot de passe
-
-### Utilisateurs (authentification requise)
-- `GET /app/users/profile` - Profil utilisateur
-- `PUT /app/users/profile` - Mise à jour du profil
+### Tests
+- `GET /travel/api/test/all` - Endpoint de test (accessible sans authentification)
 
 ## 🧪 Tests
 
@@ -130,37 +101,95 @@ Une fois l'application démarrée, accédez à la documentation Swagger à :
 mvn test
 ```
 
-### Lancer les tests avec couverture
-```bash
-mvn test jacoco:report
-```
-
 ## 📦 Déploiement
 
-### Docker
+### 🐳 Docker Local
 
 Un Dockerfile est fourni pour containeriser l'application :
 
 ```bash
 # Construire l'image
-docker build -t resto-api .
+docker build -t travel-agency-api .
 
 # Lancer le conteneur
-docker run -p 8080:8080 --env-file .env resto-api
+docker run -p 8080:8080 \
+  -e DB_URL="jdbc:mysql://host.docker.internal:3306/travel_agency" \
+  -e DB_USER=root \
+  -e DB_PASSWORD=password \
+  -e JWT_SECRET=your_jwt_secret \
+  travel-agency-api
 ```
 
-### Fichier .env exemple
+### ☁️ Déploiement Automatique sur AWS EC2
+
+L'application est automatiquement déployée sur AWS EC2 via GitHub Actions :
+
+#### 🔧 Configuration requise
+
+1. **Secrets GitHub à configurer** :
+   ```
+   AWS_ACCESS_KEY_ID          # Clé d'accès AWS
+   AWS_SECRET_ACCESS_KEY      # Clé secrète AWS
+   EC2_INSTANCE_ID           # ID de l'instance EC2
+   EC2_SSH_PRIVATE_KEY       # Clé SSH privée pour EC2
+   ```
+
+2. **Infrastructure AWS** :
+   - Instance EC2 avec Docker installé
+   - Bucket S3 `prod-travel-agency` 
+   - Région AWS : `eu-west-3`
+   - Base de données RDS MySQL (optionnel)
+
+#### 🚀 Workflow de déploiement
+
+1. **Push sur main** → Déclenchement automatique
+2. **Tests** → Exécution des tests unitaires
+3. **Build** → Compilation et packaging
+4. **Upload S3** → JAR + Dockerfile vers S3
+5. **Déploiement EC2** → Container Docker sur EC2
+
+#### 🌐 Accès à l'application
+
+Une fois déployée, l'application est accessible sur :
+- **URL** : `http://[EC2_IP]:8080/travel`
+- **Swagger** : `http://[EC2_IP]:8080/travel/swagger-ui/index.html`
+- **Health Check** : `http://[EC2_IP]:8080/travel/api/test/all`
+
+### 🛠️ Variables d'environnement pour la production
 
 ```env
-DB_URL=jdbc:mysql://db:3306/resto
-DB_USER=resto_user
+# Base de données
+DB_URL=jdbc:mysql://localhost:3306/travel_agency_prod
+DB_USER=travel_user
 DB_PASSWORD=secure_password
+
+# JWT
 JWT_SECRET=your_very_long_and_secure_jwt_secret_key_at_least_256_bits
+
+# Email
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USER=your_email@gmail.com
 MAIL_PASSWORD=your_app_password
 ```
+
+## 🏗️ Architecture CI/CD
+
+### 📋 Pipeline GitHub Actions
+
+```yaml
+Tests → Build → Deploy EC2
+  ↓       ↓         ↓
+JUnit   JAR     Docker Container
+        S3      AWS EC2
+```
+
+### 🐳 Infrastructure Docker
+
+- **Image de base** : `openjdk:21-jdk-slim`
+- **Port exposé** : `8080`
+- **Utilisateur** : `appuser` (non-root)
+- **Restart policy** : `unless-stopped`
 
 ## 🔧 Développement
 
@@ -169,11 +198,11 @@ MAIL_PASSWORD=your_app_password
 ```
 src/
 ├── main/
-│   ├── java/com/app/resto/
+│   ├── java/com/app/travel/
 │   │   ├── config/          # Configurations
 │   │   ├── controller/      # Contrôleurs REST
 │   │   ├── exception/       # Gestion des exceptions
-│   │   ├── model/          # Entités JPA
+│   │   ├── model/          # Entités JPA (User, Destination, Booking, Package...)
 │   │   ├── repos/          # Repositories
 │   │   ├── security/       # Configuration sécurité
 │   │   ├── service/        # Services métier
@@ -189,17 +218,11 @@ src/
 
 - Utilisez les DTOs pour les échanges API
 - Validez toujours les données d'entrée
-- Loggez les actions importantes
+- Loggez les actions importantes (réservations, paiements)
 - Écrivez des tests pour vos endpoints
 - Respectez les conventions REST
+- Gérez les cas d'erreur métier (places limitées, dates invalides)
 
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créez une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
 
 ## 📄 Licence
 

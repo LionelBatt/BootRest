@@ -9,11 +9,11 @@
         <relativePath/>
     </parent>
     <groupId>com.app</groupId>
-    <artifactId>resto</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>travel-agency</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging> 
-    <name>resto</name>
-    <description>Demo project for Spring Boot</description>
+    <name>travel-agency</name>
+    <description>Travel Agency E-commerce API with Spring Boot</description>
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.12.6</jjwt.version>
@@ -104,7 +104,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.app.resto.RestoApplication</mainClass>
+                    <mainClass>com.app.travel.TravelAgencyApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

@@ -217,11 +217,14 @@ jobs:
             -e SERVER_PORT=8080 \
             -e LOGGING_FILE_PATH=/app/logs/application.log \
             -e LOGGING_LEVEL_ROOT=INFO \
-            -e "DB_URL=jdbc:h2:mem:travel_prod" \
-            -e "DB_USER=sa" \
-            -e "JWT_SECRET=change_this_secret_in_production" \
-            -e "MAIL_HOST=smtp.gmail.com" \
-            -e "MAIL_PORT=587" \
+            -e "DB_URL=\$DB_URL" \
+            -e "DB_USER=\$DB_USER" \
+            -e "DB_PASSWORD=\$DB_PASSWORD" \
+            -e "JWT_SECRET=\$JWT_SECRET" \
+            -e "MAIL_HOST=\$MAIL_HOST" \
+            -e "MAIL_PORT=\$MAIL_PORT" \
+            -e "MAIL_USER=\$MAIL_USER" \
+            -e "MAIL_PASSWORD=\$MAIL_PASSWORD" \
             "\$IMAGE_NAME"
         
         # Vérifier le déploiement
@@ -259,35 +262,6 @@ jobs:
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP "bash /tmp/deploy_embedded.sh"
         
         echo "🎉 Déploiement terminé avec succès !"
-
-    - name: 🏥 Vérification de santé de l'application
-      run: |
-        # Récupérer l'IP publique de l'instance EC2
-        EC2_IP=$(aws ec2 describe-instances \
-          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
-          --query 'Reservations[0].Instances[0].PublicIpAddress' \
-          --output text)
-        
-        echo "🌐 IP de l'instance EC2: $EC2_IP"
-        
-        # Attendre que l'application soit prête
-        echo "⏳ Vérification de la santé de l'application..."
-        for i in {1..30}; do
-          if curl -f "http://$EC2_IP:8080/travel/api/test/all" > /dev/null 2>&1; then
-            echo "✅ Application Docker accessible et fonctionnelle !"
-            echo "🌐 URL: http://$EC2_IP:8080/travel"
-            echo "📚 Swagger: http://$EC2_IP:8080/travel/swagger-ui/index.html"
-            echo "🐳 Container status: $(ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'docker ps -f name=travel-agency-app --format "table {{.Names}}\t{{.Status}}"')"
-            exit 0
-          fi
-          echo "⏳ Tentative $i/30..."
-          sleep 10
-        done
-        
-        echo "❌ L'application ne répond pas après 5 minutes"
-        echo "🔍 Status du container:"
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP 'docker ps -a && docker logs travel-agency-app --tail 20'
-        exit 1
 
     - name: 🧹 Nettoyage du bucket temporaire
       if: always()

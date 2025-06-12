@@ -59,9 +59,26 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(content -> content.disable())
+                .httpStrictTransportSecurity(hstsConfig -> hstsConfig.disable()))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Swagger/OpenAPI endpoints - Configuration pour context-path /travel (DOIT ÊTRE EN PREMIER)
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs").permitAll()
+                .requestMatchers("/travel/v3/api-docs/**", "/travel/v3/api-docs").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/travel/swagger-ui/**", "/travel/swagger-ui.html").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                .requestMatchers("/webjars/**").permitAll()
+                .requestMatchers("/docs/**", "/swagger/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                
+                // Console H2 pour développement
+                .requestMatchers("/h2-console/**").permitAll()
+                
                 // Endpoints publics d'authentification
                 .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
                 .requestMatchers("/api/password-recovery/**").permitAll()
@@ -69,23 +86,15 @@ public class WebSecurityConfig {
                 // Endpoints publics des destinations (lecture seule)
                 .requestMatchers("/api/destinations/**").permitAll()
                 
+                // Endpoints pour les ressources statiques
+                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
+                
                 // Endpoints des réservations (nécessitent une authentification)
                 .requestMatchers("/api/bookings/**").authenticated()
                 
-                // Swagger/OpenAPI endpoints - IMPORTANT: order matters!
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/swagger-ui.html").permitAll() 
-                .requestMatchers("/swagger-resources/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/v3/api-docs").permitAll()
-                .requestMatchers("/api-docs/**").permitAll()
-                .requestMatchers("/webjars/**").permitAll()
-                .requestMatchers("/travel/v3/api-docs/**").permitAll() 
-                .requestMatchers("/travel/v3/api-docs").permitAll()
-                .requestMatchers("/travel/swagger-ui/**").permitAll()
-                .requestMatchers("/travel/swagger-ui.html").permitAll()
-                // Endpoints pour les ressources statiques
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()            
+                // Endpoints des trips
+                .requestMatchers("/trips/**").authenticated()
+                            
                 //Tous les autres requêtes nécessitent une authentification
                 .anyRequest().authenticated()
             );

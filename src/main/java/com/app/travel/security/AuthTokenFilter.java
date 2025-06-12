@@ -39,8 +39,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             path.contains("/v3/api-docs") || 
             path.contains("/api-docs") ||
             path.contains("/webjars") ||
-            path.equals("/resto/v3/api-docs") ||
-            path.startsWith("/resto/swagger-ui/")) {
+            path.equals("/travel/v3/api-docs") ||
+            path.startsWith("/travel/swagger-ui/")) {
             filterChain.doFilter(request, response);
             return;
         }

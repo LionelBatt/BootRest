@@ -11,11 +11,11 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
 
     List<Trip> findByDestination(City destination);
 
-    //IL ya un bug avec la ligne suivante, il faut la corriger:
+    //Bug corrigé?
 
-    //List<Trip> findByDestination_Country(String country);
-    //List<Trip> findByDestination_Continent(String continent);
-    //Trip findFirstByDestination_City(String city);
+    List<Trip> findByDestination_Country(String country);
+    List<Trip> findByDestination_Continent(String continent);
+    Trip findFirstByDestination_City(String city);
 
     
     List<Trip> findByUser_UserId(Integer userId);

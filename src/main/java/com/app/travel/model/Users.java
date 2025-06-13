@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -45,7 +46,7 @@ public class Users {
 	@Column(nullable = false)
 	private String address;
 
-
+	@OneToOne @JoinColumn( name = "CardInfo_ID")
 	@Column(nullable = false)
 	private CardInfo cardInfo;
 

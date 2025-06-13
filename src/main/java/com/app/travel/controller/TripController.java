@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.travel.dto.ApiResponse;
 import com.app.travel.model.City;
+import com.app.travel.model.Continent;
+import com.app.travel.model.Country;
 import com.app.travel.model.Trip;
 import com.app.travel.repos.TripRepository;
 
@@ -107,11 +109,26 @@ public class TripController {
         }
     }
 
-    @GetMapping("/destination/{destination}")
-    public ResponseEntity<ApiResponse<List<Trip>>> findByDestination(@PathVariable String destination) {
+    @GetMapping("/continentdestination/{destination}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_Continent(@PathVariable String destination) {
+        try {
+            Continent destinationEnum = Continent.valueOf(destination.toUpperCase());
+            List<Trip> trips = tripRepository.findByDestination_Continent(destinationEnum);
+            return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme continent de destination: " + destination, trips));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Continent de destination invalide: " + destination + "."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche par continent de destination", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/citydestination/{destination}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_City(@PathVariable String destination) {
         try {
             City destinationEnum = City.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestination(destinationEnum);
+            List<Trip> trips = tripRepository.findByDestination_City(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour la destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -119,6 +136,21 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la recherche par destination", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/countrydestination/{destination}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_Country(@PathVariable String destination) {
+        try {
+            Country destinationEnum = Country.valueOf(destination.toUpperCase());
+            List<Trip> trips = tripRepository.findByDestination_Country(destinationEnum);
+            return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme pays de destination: " + destination, trips));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Pays de destination invalide: " + destination + "."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche par pays de destination", e.getMessage()));
         }
     }
 

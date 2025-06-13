@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.app.travel.model.City;
+import com.app.travel.model.Continent;
+import com.app.travel.model.Country;
 import com.app.travel.model.Trip;
 
 public interface TripRepository extends JpaRepository<Trip, Integer> {
@@ -13,9 +15,10 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
 
     //Bug corrigé?
 
-    List<Trip> findByDestination_Country(String country);
-    List<Trip> findByDestination_Continent(String continent);
-    Trip findFirstByDestination_City(String city);
+    List<Trip> findByDestination_Country(Country country);
+    List<Trip> findByDestination_Continent(Continent continent);
+    List<Trip> findByDestination_City(City city);
+    //Trip findFirstByDestination_City(City city);
 
     
     List<Trip> findByUser_UserId(Integer userId);

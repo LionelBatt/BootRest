@@ -13,10 +13,6 @@ import com.app.travel.model.Trip;
 
 public interface TripRepository extends JpaRepository<Trip, Integer> {
 
-
-    @Query("SELECT t FROM Trip t WHERE t.DestinationCity = :city")
-    List<Trip> findByDestination(@Param("city") City city);
-
     @Query("SELECT t FROM Trip t WHERE t.DestinationCountry = :country")
     List<Trip> findByDestinationCountry(@Param("country") Country country);
     

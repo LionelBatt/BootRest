@@ -165,7 +165,21 @@ public class TripController {
         }
     }
 
-    // recherche sans filtre : /research/nul/nul/nul/0/9999/0/0/0/0/9999999
+    /**
+     * Offer filter option on trip research in sql database.
+     * <p>Without filter research url : /research/nul/nul/nul/0/9999/0/0/0/0/9999999
+     * @param destinationContinent (default: "nul")
+     * @param destinationCountry (default: "nul")
+     * @param destinationCity (default: "nul")
+     * @param minimumDuration (default: 0)
+     * @param maximumDuration (default: 9999)
+     * @param option1id (default: 0)
+     * @param option2id (default: 0)
+     * @param option3id (default: 0)
+     * @param prixmin (default: 0)
+     * @param prixmax (default: 9999999)
+     * @return List<Trip> of Trip matching research filter
+     */
     @GetMapping("/research/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
     public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
     @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
@@ -175,7 +189,10 @@ public class TripController {
             Continent destinationCont = destinationContinent.equalsIgnoreCase("nul")? null: Continent.valueOf(destinationContinent.toUpperCase());
             Country destinationCount = destinationCountry.equalsIgnoreCase("nul")? null: Country.valueOf(destinationCountry.toUpperCase());
             City destinationCit = destinationCity.equalsIgnoreCase("nul")? null: City.valueOf(destinationCity.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestinationCity(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, option1id, option2id, option3id, prixmin, prixmax);
+            int opt1 = (option1id == 0)? null: option1id;
+            int opt2 = (option2id == 0)? null: option2id;
+            int opt3 = (option3id == 0)? null: option3id;
+            List<Trip> trips = tripRepository.findByDestinationCity(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, opt1, opt2, opt3, prixmin, prixmax);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -183,6 +200,17 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la recherche", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/search/{character}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findByCharacter(@PathVariable String character) {
+        try {
+            List<Trip> trips = tripRepository.findByCharacter(character);
+            return ResponseEntity.ok(ApiResponse.success("Voyages trouvés contenant le caractère: " + character, trips));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche par caractère", e.getMessage()));
         }
     }
 }

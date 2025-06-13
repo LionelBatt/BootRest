@@ -1,18 +1,17 @@
 package com.app.travel.model;
-
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -24,24 +23,20 @@ public class Order {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int commandId;
 	
-	@Column(nullable = false)
+	@ManyToOne
+	@JoinColumn(name = "User_ID", nullable = false)
 	private int userId;
 	
-  	@OneToOne 
+    @ManyToOne
 	@JoinColumn(name="trip_Id", nullable = false)
 	private Trip trip;
 	
 	@Column(name = "number_of_passenger", nullable = false)
 	private int numberOfPassagers;
 	
-	
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(
-		name = "order_options",
-		joinColumns = @JoinColumn(name = "order_id"),
-		inverseJoinColumns = @JoinColumn(name = "option_id")
-	)
-	private List<Option> options;
+	@ManyToMany
+	@JoinTable(name="Order_s_Options", joinColumns = @JoinColumn(name = "Order_ID"), inverseJoinColumns = @JoinColumn(name = "Option_ID"))
+	private Collection<Option> options;
 
 	@Column(name = "Trip_Start_Date", nullable = false)
 	private Date tripStartDate;
@@ -105,7 +100,7 @@ public class Order {
 		this.numberOfPassagers = numberOfPassagers;
 	}
 
-	public List<Option> getOptions() {
+	public Collection<Option> getOptions() {
 		return options;
 	}
 

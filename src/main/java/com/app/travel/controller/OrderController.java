@@ -12,6 +12,6 @@ import com.app.travel.repos.OrderRepository;
 @RequestMapping("/orders")
 public class OrderController {
     
-    @Autowired
-    private OrderRepository orderRepository;
+    //@Autowired
+    //private OrderRepository orderRepository;
 }

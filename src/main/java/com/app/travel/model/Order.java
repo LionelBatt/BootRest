@@ -16,35 +16,35 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 @Entity
-@Table(name = "Orders")
+@Table(name = "orders")
 public class Order {
     
     @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int commandId;
+	private int orderId;
 	
 	@ManyToOne
-	@JoinColumn(name = "User_ID", nullable = false)
-	private int userId;
+	@JoinColumn(name = "user_id", nullable = false)
+	private Users user;
 	
     @ManyToOne
-	@JoinColumn(name="trip_Id", nullable = false)
+	@JoinColumn(name="trip_id", nullable = false)
 	private Trip trip;
 	
 	@Column(name = "number_of_passenger", nullable = false)
 	private int numberOfPassagers;
 	
 	@ManyToMany
-	@JoinTable(name="Order_s_Options", joinColumns = @JoinColumn(name = "Order_ID"), inverseJoinColumns = @JoinColumn(name = "Option_ID"))
+	@JoinTable(name="order_options", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
 	private Collection<Option> options;
 
-	@Column(name = "Trip_Start_Date", nullable = false)
+	@Column(name = "trip_start_date", nullable = false)
 	private Date tripStartDate;
 
-	@Column(name = "Travel_Time", nullable = false)
+	@Column(name = "travel_time", nullable = false)
 	private Date travelTime;
 
-	@Column(name = "Creation_Date", nullable = false)
+	@Column(name = "creation_date", nullable = false)
 	private Date creationDate;
 
 	@Column(nullable = false)
@@ -57,8 +57,8 @@ public class Order {
 		super();
 	}
 
-	public Order(int userId, Trip trip, int numberOfPassagers, List<Option> options, Date tripStartDate,Date travelTime, Date creationDate, double total) {
-		this.userId = userId;
+	public Order(Users user, Trip trip, int numberOfPassagers, List<Option> options, Date tripStartDate,Date travelTime, Date creationDate, double total) {
+		this.user = user;
 		this.trip = trip;
 		this.numberOfPassagers = numberOfPassagers;
 		this.options = options;
@@ -68,20 +68,20 @@ public class Order {
 		this.total = total;
 	}
 
-	public int getCommandId() {
-		return commandId;
+	public int getOrderId() {
+		return orderId;
 	}
 
-	public void setCommandId(int commandId) {
-		this.commandId = commandId;
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
 	}
 
-	public int getUserId() {
-		return userId;
+	public Users getUser() {
+		return user;
 	}
 
-	public void setUserId(int userId) {
-		this.userId = userId;
+	public void setUser(Users user) {
+		this.user = user;
 	}
 
 	public Trip getTrip() {
@@ -150,7 +150,7 @@ public class Order {
 
 	@Override
 	public String toString() {
-		return "Order [commandId=" + commandId + ", userId=" + userId + ", trip=" + trip + ", numberOfPassagers="
+		return "Order [orderId=" + orderId + ", user=" + user.getUsername() + ", trip=" + trip + ", numberOfPassagers="
 				+ numberOfPassagers + ", options=" + options + ", tripStartDate=" + tripStartDate + ", travelTime="
 				+ travelTime + ", creationDate=" + creationDate + ", total=" + total + "]";
 	}

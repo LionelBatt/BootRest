@@ -31,8 +31,7 @@ public class LoginAttempt {
     public LoginAttempt(String username) {
         this.username = username;
     }
-    
-    // Getters et Setters
+     
     public Long getId() { 
         return id; 
     }

@@ -25,13 +25,13 @@ public class Trip {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private Country Destination_Country;
+    private Country DestinationCountry;
     
     @Enumerated(EnumType.STRING)
-    private Continent Destination_Continent;
+    private Continent DestinationContinent;
 
     @Enumerated(EnumType.STRING)
-    private City Destination_City;
+    private City DestinationCity;
 
     private Date minimumDuration;
 
@@ -44,7 +44,7 @@ public class Trip {
     private Collection<Users> lovers;
 
     @ManyToMany
-    @JoinTable(name="Trip_s_Options", joinColumns = @JoinColumn(name = "Trip_ID"), inverseJoinColumns = @JoinColumn(name = "Option_ID"))
+    @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
     private Collection<Option> packageOptions;
 
     private int unitPrice;
@@ -52,11 +52,10 @@ public class Trip {
     @Version
     private int version;
 
-    public Trip(Country destination_Country, Continent destination_Continent, City destination_City,
-            Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
-        Destination_Country = destination_Country;
-        Destination_Continent = destination_Continent;
-        Destination_City = destination_City;
+    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
+        this.DestinationCountry = destinationCountry;
+        this.DestinationContinent = destinationContinent;
+        this.DestinationCity = destinationCity;
         this.minimumDuration = minimumDuration;
         this.description = description;
         this.packageOptions = packageOptions;
@@ -72,27 +71,27 @@ public class Trip {
     }
 
     public Country getDestination_Country() {
-        return Destination_Country;
+        return DestinationCountry;
     }
 
     public void setDestination_Country(Country destination_Country) {
-        Destination_Country = destination_Country;
+        DestinationCountry = destination_Country;
     }
 
     public Continent getDestination_Continent() {
-        return Destination_Continent;
+        return DestinationContinent;
     }
 
     public void setDestination_Continent(Continent destination_Continent) {
-        Destination_Continent = destination_Continent;
+        DestinationContinent = destination_Continent;
     }
 
     public City getDestination_City() {
-        return Destination_City;
+        return DestinationCity;
     }
 
     public void setDestination_City(City destination_City) {
-        Destination_City = destination_City;
+        DestinationCity = destination_City;
     }
 
     public Date getMinimumDuration() {
@@ -153,8 +152,8 @@ public class Trip {
 
     @Override
     public String toString() {
-        return "Trip [id=" + id + ", Destination_Country=" + Destination_Country + ", Destination_Continent="
-                + Destination_Continent + ", Destination_City=" + Destination_City + ", minimumDuration="
+        return "Trip [id=" + id + ", Destination_Country=" + DestinationCountry + ", Destination_Continent="
+                + DestinationContinent + ", Destination_City=" + DestinationCity + ", minimumDuration="
                 + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
                 + ", unitPrice=" + unitPrice + "]";
     }

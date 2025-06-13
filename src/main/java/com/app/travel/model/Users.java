@@ -1,5 +1,7 @@
 package com.app.travel.model;
 
+import java.util.Collection;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,6 +9,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -39,7 +46,17 @@ public class Users {
 	@Column(nullable = false)
 	private String address;
 
-	@Column(nullable = false)
+	@OneToOne
+	@JoinColumn(name = "card_info_id")
+	private CardInfo cardInfo;
+
+	@ManyToMany
+	@JoinTable(name="bookmarks_listings", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "trip_id"))
+	private Collection<Trip> bookmarks;
+
+	@OneToMany(mappedBy = "user")
+	private Collection<Order> orders;
+	
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.USER; // Le role par défaut est USER
 	
@@ -49,12 +66,13 @@ public class Users {
 	public Users() {
 	}
 
-	// public Users(String username, String password, String email, Role role) {
-	// 	this.username = username;
-	// 	this.password = password;
-	// 	this.email = email;
-	// 	this.role = role;
-	// }
+	public Users(String username, String password, String email, Role role) {
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.role = role;
+	}
+	
 	public Users(String username, String password, String email, String phoneNumber, String name, String surname, String address) {
 		this.username = username;
 		this.password = password;
@@ -129,6 +147,30 @@ public class Users {
 		this.address = address;
 	}
 
+	public CardInfo getCardInfo() {
+		return cardInfo;
+	}
+
+	public void setCardInfo(CardInfo cardInfo) {
+		this.cardInfo = cardInfo;
+	}
+
+	public Collection<Trip> getBookmarks() {
+		return bookmarks;
+	}
+
+	public void setBookmarks(Collection<Trip> bookmarks) {
+		this.bookmarks = bookmarks;
+	}
+
+	public Collection<Order> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(Collection<Order> orders) {
+		this.orders = orders;
+	}
+
 	public Role getRole() {
 		return role;
 	}
@@ -149,7 +191,6 @@ public class Users {
 	public String toString() {
 		return "Users [userId=" + userId + ", username=" + username + ", password=" + password + ", email=" + email
 				+ ", phoneNumber=" + phoneNumber + ", name=" + name + ", surname=" + surname + ", address=" + address + "]";
-		// + ", role=" + role + "]";
 	}
 	
 }

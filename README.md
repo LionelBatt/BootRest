@@ -181,7 +181,8 @@ MAIL_PASSWORD=your_app_password
 Tests → Build → Deploy EC2
   ↓       ↓         ↓
 JUnit   JAR     Docker Container
-        S3      AWS EC2
+  ↓      S3       AWS EC2
+Qodana         
 ```
 
 ### 🐳 Infrastructure Docker
@@ -209,11 +210,10 @@ src/
 │   │   └── utils/          # Utilitaires
 │   └── resources/
 │       ├── application.properties
-│       ├── application-dev.properties
 │       └── application-prod.properties
 └── test/                   # Tests unitaires et d'intégration
 ```
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est sous licence Apache License 2.0 . Voir le fichier `LICENSE` pour plus de détails.

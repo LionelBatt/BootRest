@@ -1,10 +1,12 @@
 package com.app.travel.model;
+import java.util.Collection;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -14,14 +16,21 @@ public class Option {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "option_id")
     private int optionId;
 
-    @Column(name = "Description", nullable = false)
+    @Column(name = "description", nullable = false)
     private String desc;
 
     @Column(nullable = false)
     private double prix;
 
+    @ManyToMany(mappedBy = "options")
+    private Collection<Order> orders;
+
+    @ManyToMany(mappedBy = "packageOptions")
+    private Collection<Trip> trips;
+    
     @Version
     private int version;
 

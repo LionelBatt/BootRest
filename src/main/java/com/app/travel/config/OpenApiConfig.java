@@ -10,7 +10,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
@@ -18,17 +17,17 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .addServersItem(new Server().url("/travel").description("Travel Agency API Server"))
                 .info(new Info()
                         .title("Travel Agency API")
                         .version("1.0.1")
-                        .description("API REST pour une plateforme e-commerce d'agence de voyage avec Spring Boot 3.5.0 et Java 21")
+                        .description("Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage.")
                         .contact(new Contact()
-                                .name("Équipe Travel Agency")
-                                .email("contact@travelagency.com"))
+                                .name("Travel Agency Team")
+                                .email("contact@travel-agency.com")
+                                .url("https://github.com/LionelBatt/BootRest"))
                         .license(new License()
-                                .name("MIT License")
-                                .url("https://opensource.org/licenses/MIT")))
+                                .name("Apache License 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components()
                         .addSecuritySchemes("Bearer Authentication",
@@ -36,6 +35,6 @@ public class OpenApiConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Entrez votre token JWT pour accéder aux endpoints protégés")));
+                                        .description("Entrez votre token JWT avec le préfixe 'Bearer '")));
     }
 }

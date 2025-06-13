@@ -1,17 +1,18 @@
 package com.app.travel.model;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -22,29 +23,39 @@ public class Trip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-  
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userid")
-    private Users user;
 
     @Enumerated(EnumType.STRING)
-    private City destination;
+    private Country DestinationCountry;
+    
+    @Enumerated(EnumType.STRING)
+    private Continent DestinationContinent;
+
+    @Enumerated(EnumType.STRING)
+    private City DestinationCity;
 
     private Date minimumDuration;
+
     private String description;
-    private List<String> packageOptions;
+
+    @OneToMany(mappedBy = "trip")
+    private Collection<Order> orders;
+
+    @ManyToMany(mappedBy = "bookmarks")
+    private Collection<Users> lovers;
+
+    @ManyToMany
+    @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
+    private Collection<Option> packageOptions;
+
     private int unitPrice;
 
     @Version
     private int version;
 
-    public Trip() {
-
-    }
-    
-    public Trip( City destination, Users user, Date minimumDuration, String description, List<String> packageOptions, int unitPrice) {
-        this.user = user;
-        this.destination = destination;
+    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
+        this.DestinationCountry = destinationCountry;
+        this.DestinationContinent = destinationContinent;
+        this.DestinationCity = destinationCity;
         this.minimumDuration = minimumDuration;
         this.description = description;
         this.packageOptions = packageOptions;
@@ -58,55 +69,92 @@ public class Trip {
     public void setId(int id) {
         this.id = id;
     }
-    
-    public City getDestination() {  
-        return destination;
-    }
-    
-    public void setDestination(City destination) {
-        this.destination = destination;
+
+    public Country getDestination_Country() {
+        return DestinationCountry;
     }
 
-    public Users getUser() {   
-        return user;   
-    }
-    public void setUser(Users user) {  
-        this.user = user;  
+    public void setDestination_Country(Country destination_Country) {
+        DestinationCountry = destination_Country;
     }
 
-    public Date getMinimumDuration() { 
-        return minimumDuration;   
+    public Continent getDestination_Continent() {
+        return DestinationContinent;
+    }
+
+    public void setDestination_Continent(Continent destination_Continent) {
+        DestinationContinent = destination_Continent;
+    }
+
+    public City getDestination_City() {
+        return DestinationCity;
+    }
+
+    public void setDestination_City(City destination_City) {
+        DestinationCity = destination_City;
+    }
+
+    public Date getMinimumDuration() {
+        return minimumDuration;
     }
 
     public void setMinimumDuration(Date minimumDuration) {
-        this.minimumDuration = minimumDuration; 
+        this.minimumDuration = minimumDuration;
     }
 
-    public String getDescription() { 
-        return description; 
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescription(String description) { 
-        this.description = description;  
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public List<String> getPackageOptions() { 
+    public Collection<Option> getPackageOptions() {
         return packageOptions;
     }
-    public void setPackageOptions(List<String> packageOptions) { 
+
+    public void setPackageOptions(Collection<Option> packageOptions) {
         this.packageOptions = packageOptions;
     }
 
-    public int getUnitPrice() {   
-        return unitPrice;  
+    public int getUnitPrice() {
+        return unitPrice;
     }
-    public void setUnitPrice(int unitPrice) { 
-        this.unitPrice = unitPrice; 
+
+    public void setUnitPrice(int unitPrice) {
+        this.unitPrice = unitPrice;
     }
-    public int getVersion() { 
-        return version; 
+    
+    public Collection<Order> getOrders() {
+        return orders;
     }
-    public void setVersion(int version) { 
-        this.version = version; 
+
+    public void setOrders(Collection<Order> orders) {
+        this.orders = orders;
+    }
+
+    public Collection<Users> getLovers() {
+        return lovers;
+    }
+
+    public void setLovers(Collection<Users> lovers) {
+        this.lovers = lovers;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "Trip [id=" + id + ", Destination_Country=" + DestinationCountry + ", Destination_Continent="
+                + DestinationContinent + ", Destination_City=" + DestinationCity + ", minimumDuration="
+                + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
+                + ", unitPrice=" + unitPrice + "]";
     }
 }

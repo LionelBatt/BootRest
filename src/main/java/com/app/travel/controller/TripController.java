@@ -175,7 +175,7 @@ public class TripController {
             Continent destinationCont = destinationContinent.equalsIgnoreCase("nul")? null: Continent.valueOf(destinationContinent.toUpperCase());
             Country destinationCount = destinationCountry.equalsIgnoreCase("nul")? null: Country.valueOf(destinationCountry.toUpperCase());
             City destinationCit = destinationCity.equalsIgnoreCase("nul")? null: City.valueOf(destinationCity.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestinationCity(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, option1id, option2id, option3id, prixmin, prixmax);
+            List<Trip> trips = tripRepository.findByDestinationCityWithOptions(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, option1id, option2id, option3id, prixmin, prixmax);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

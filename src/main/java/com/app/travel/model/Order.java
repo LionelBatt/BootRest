@@ -1,12 +1,10 @@
 package com.app.travel.model;
-import java.util.Collection;
-import java.util.List;
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -59,8 +57,7 @@ public class Order {
 		super();
 	}
 
-	public Order(int userId, Trip trip, int numberOfPassagers, List<Option> options, Date tripStartDate,
-			Date travelTime, Date creationDate, double total) {
+	public Order(int userId, Trip trip, int numberOfPassagers, List<Option> options, Date tripStartDate,Date travelTime, Date creationDate, double total) {
 		this.userId = userId;
 		this.trip = trip;
 		this.numberOfPassagers = numberOfPassagers;

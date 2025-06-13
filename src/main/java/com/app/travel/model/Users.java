@@ -165,7 +165,6 @@ public class Users {
 	public String toString() {
 		return "Users [userId=" + userId + ", username=" + username + ", password=" + password + ", email=" + email
 				+ ", phoneNumber=" + phoneNumber + ", name=" + name + ", surname=" + surname + ", address=" + address + "]";
-		// + ", role=" + role + "]";
 	}
 	
 }

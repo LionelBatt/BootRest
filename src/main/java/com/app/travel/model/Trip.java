@@ -1,17 +1,18 @@
 package com.app.travel.model;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -24,7 +25,7 @@ public class Trip {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private city destination;
+    private City destination;
 
     private Date minimumDuration;
 
@@ -45,6 +46,15 @@ public class Trip {
     @Version
     private int version;
 
+    public Trip(City destination, Date minimumDuration, String description, Collection<Option> packageOptions,int unitPrice) {
+        this.destination = destination;
+        this.minimumDuration = minimumDuration;
+        this.description = description;
+        this.packageOptions = packageOptions;
+        this.unitPrice = unitPrice;
+    }
+
+
     public int getId() {
         return id;
     }
@@ -53,11 +63,11 @@ public class Trip {
         this.id = id;
     }
 
-    public city getDestination() {
+    public City getDestination() {
         return destination;
     }
 
-    public void setDestination(city destination) {
+    public void setDestination(City destination) {
         this.destination = destination;
     }
 
@@ -117,71 +127,4 @@ public class Trip {
         this.version = version;
     }
 
-    public Trip(city destination, Date minimumDuration, String description, Collection<Option> packageOptions,
-            int unitPrice) {
-        this.destination = destination;
-        this.minimumDuration = minimumDuration;
-        this.description = description;
-        this.packageOptions = packageOptions;
-        this.unitPrice = unitPrice;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-    
-    public City getDestination() {  
-        return destination;
-    }
-    
-    public void setDestination(City destination) {
-        this.destination = destination;
-    }
-
-    public Users getUser() {   
-        return user;   
-    }
-    public void setUser(Users user) {  
-        this.user = user;  
-    }
-
-    public Date getMinimumDuration() { 
-        return minimumDuration;   
-    }
-
-    public void setMinimumDuration(Date minimumDuration) {
-        this.minimumDuration = minimumDuration; 
-    }
-
-    public String getDescription() { 
-        return description; 
-    }
-
-    public void setDescription(String description) { 
-        this.description = description;  
-    }
-
-    public List<String> getPackageOptions() { 
-        return packageOptions;
-    }
-    public void setPackageOptions(List<String> packageOptions) { 
-        this.packageOptions = packageOptions;
-    }
-
-    public int getUnitPrice() {   
-        return unitPrice;  
-    }
-    public void setUnitPrice(int unitPrice) { 
-        this.unitPrice = unitPrice; 
-    }
-    public int getVersion() { 
-        return version; 
-    }
-    public void setVersion(int version) { 
-        this.version = version; 
-    }
 }

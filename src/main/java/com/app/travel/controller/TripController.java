@@ -113,7 +113,7 @@ public class TripController {
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_Continent(@PathVariable String destination) {
         try {
             Continent destinationEnum = Continent.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestination_Continent(destinationEnum);
+            List<Trip> trips = tripRepository.findByDestinationContinent(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme continent de destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -128,7 +128,7 @@ public class TripController {
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_City(@PathVariable String destination) {
         try {
             City destinationEnum = City.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestination_City(destinationEnum);
+            List<Trip> trips = tripRepository.findByDestinationCity(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour la destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -143,7 +143,7 @@ public class TripController {
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestination_Country(@PathVariable String destination) {
         try {
             Country destinationEnum = Country.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestination_Country(destinationEnum);
+            List<Trip> trips = tripRepository.findByDestinationCountry(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme pays de destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -55,15 +55,15 @@ public class OrderController {
     @PutMapping("")
     public ResponseEntity<ApiResponse<Order>> update(@RequestBody Order order) {
         try {
-            if (order.getCommandId() == 0) {
+            if (order.getOrderId() == 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.error("ID de la commande requis pour la mise à jour"));
             }
             
-            Optional<Order> existingorder = orderRepository.findById(order.getCommandId());
+            Optional<Order> existingorder = orderRepository.findById(order.getOrderId());
             if (existingorder.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Commande non trouvé avec l'ID: " + order.getCommandId()));
+                        .body(ApiResponse.error("Commande non trouvé avec l'ID: " + order.getOrderId()));
             }
 
             Order updatedOrder = orderRepository.save(order);

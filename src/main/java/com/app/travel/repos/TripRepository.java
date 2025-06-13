@@ -18,6 +18,9 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
     
     @Query("SELECT t FROM Trip t WHERE t.DestinationContinent = :continent")
     List<Trip> findByDestinationContinent(@Param("continent") Continent continent);
+
+    @Query("SELECT t FROM Trip t WHERE t.DestinationContinent = :continent")
+    List<Trip> findByDestinationCity(@Param("continent") City city);
     
     @Query("SELECT t FROM Trip t WHERE t.DestinationCity = :city")
     Trip findFirstByDestinationCity(@Param("city") City city);

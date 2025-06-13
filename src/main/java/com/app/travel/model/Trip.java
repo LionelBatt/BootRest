@@ -25,7 +25,13 @@ public class Trip {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private City destination;
+    private Country Destination_Country;
+    
+    @Enumerated(EnumType.STRING)
+    private Continent Destination_Continent;
+
+    @Enumerated(EnumType.STRING)
+    private City Destination_City;
 
     private Date minimumDuration;
 
@@ -46,14 +52,16 @@ public class Trip {
     @Version
     private int version;
 
-    public Trip(City destination, Date minimumDuration, String description, Collection<Option> packageOptions,int unitPrice) {
-        this.destination = destination;
+    public Trip(Country destination_Country, Continent destination_Continent, City destination_City,
+            Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
+        Destination_Country = destination_Country;
+        Destination_Continent = destination_Continent;
+        Destination_City = destination_City;
         this.minimumDuration = minimumDuration;
         this.description = description;
         this.packageOptions = packageOptions;
         this.unitPrice = unitPrice;
     }
-
 
     public int getId() {
         return id;
@@ -63,12 +71,28 @@ public class Trip {
         this.id = id;
     }
 
-    public City getDestination() {
-        return destination;
+    public Country getDestination_Country() {
+        return Destination_Country;
     }
 
-    public void setDestination(City destination) {
-        this.destination = destination;
+    public void setDestination_Country(Country destination_Country) {
+        Destination_Country = destination_Country;
+    }
+
+    public Continent getDestination_Continent() {
+        return Destination_Continent;
+    }
+
+    public void setDestination_Continent(Continent destination_Continent) {
+        Destination_Continent = destination_Continent;
+    }
+
+    public City getDestination_City() {
+        return Destination_City;
+    }
+
+    public void setDestination_City(City destination_City) {
+        Destination_City = destination_City;
     }
 
     public Date getMinimumDuration() {
@@ -127,4 +151,11 @@ public class Trip {
         this.version = version;
     }
 
+    @Override
+    public String toString() {
+        return "Trip [id=" + id + ", Destination_Country=" + Destination_Country + ", Destination_Continent="
+                + Destination_Continent + ", Destination_City=" + Destination_City + ", minimumDuration="
+                + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
+                + ", unitPrice=" + unitPrice + "]";
+    }
 }

@@ -22,6 +22,7 @@ public class ResetToken {
 	private boolean tokenUsed;
 
 	public ResetToken() {
+		super();
 	}
 
 	public int getId() {

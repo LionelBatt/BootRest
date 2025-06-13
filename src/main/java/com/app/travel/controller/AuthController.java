@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,10 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.travel.dto.ApiResponse;
+import com.app.travel.model.Role;
 import com.app.travel.model.Users;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.LoginAttemptService;
+import com.app.travel.service.TokenBlacklistService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,6 +47,9 @@ public class AuthController {
 	
 	@Autowired
 	LoginAttemptService loginAttemptService;
+
+	@Autowired
+	TokenBlacklistService tokenBlacklistService;
 
 	@PostMapping("/login")
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {
@@ -90,12 +100,27 @@ public class AuthController {
 				user.getPhoneNumber(),
 				user.getName(),
 				user.getSurname(), 
-				user.getAddress()			
+				user.getAddress()
 			);
+			newUser.setRole(Role.USER);
 			repos.save(newUser);
 			return ApiResponse.success("Utilisateur enregistré avec succès!", "Compte créé");
 		} catch (Exception e) {
 			return ApiResponse.error("Erreur lors de l'inscription", "Impossible de créer le compte");
 		}
+	}
+
+	@PostMapping("/logout")
+	@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+	public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String jwt = authHeader.substring(7);
+			tokenBlacklistService.blacklistToken(jwt);
+			return ResponseEntity.ok(ApiResponse.success("Déconnexion réussie", "Vous avez été déconnecté avec succès"));
+		}
+
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Déconnexion échouée", "Token manquant ou invalide"));
 	}
 }

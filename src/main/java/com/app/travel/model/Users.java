@@ -49,12 +49,13 @@ public class Users {
 	public Users() {
 	}
 
-	// public Users(String username, String password, String email, Role role) {
-	// 	this.username = username;
-	// 	this.password = password;
-	// 	this.email = email;
-	// 	this.role = role;
-	// }
+	public Users(String username, String password, String email, Role role) {
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.role = role;
+	}
+	
 	public Users(String username, String password, String email, String phoneNumber, String name, String surname, String address) {
 		this.username = username;
 		this.password = password;

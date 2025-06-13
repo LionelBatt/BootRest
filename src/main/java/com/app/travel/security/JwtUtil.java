@@ -5,8 +5,13 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.app.travel.service.TokenBlacklistService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,15 +19,21 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtUtil {
 	
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+    
     @Value("${jwt.secret}")
     private String jwtSecret;
     
     @Value("${jwt.expiration}")
     private int jwtExpirationMs;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
     
     private SecretKey key;
     // Initializes the key after the class is instantiated and the jwtSecret is injected, 
@@ -52,19 +63,32 @@ public class JwtUtil {
     // Validate JWT token
     public boolean validateJwtToken(String token) {
         try {
+            // Vérifier d'abord si le token est blacklisté
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                logger.error("JWT token is blacklisted: {}", token);
+                return false;
+            }        
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (SecurityException e) {
-            System.out.println("Invalid JWT signature: " + e.getMessage());
+            logger.error("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            System.out.println("Invalid JWT token: " + e.getMessage());
+            logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            System.out.println("JWT token is expired: " + e.getMessage());
+            logger.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            System.out.println("JWT token is unsupported: " + e.getMessage());
+            logger.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.out.println("JWT claims string is empty: " + e.getMessage());
+            logger.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+
+    public String extractTokenFromRequest(HttpServletRequest request) {
+    String headerAuth = request.getHeader("Authorization");
+    if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+        return headerAuth.substring(7); // Enlever "Bearer "
+    }
+    return null;
     }
 }

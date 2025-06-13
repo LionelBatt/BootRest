@@ -164,4 +164,24 @@ public class TripController {
                     .body(ApiResponse.error("Erreur lors de la recherche par utilisateur", e.getMessage()));
         }
     }
+
+    @GetMapping("/research/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
+    public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
+    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
+    @PathVariable int prixmax) {
+        try {
+
+            Continent destinationCont = destinationContinent.equalsIgnoreCase("nul")? null: Continent.valueOf(destinationContinent.toUpperCase());
+            Country destinationCount = destinationCountry.equalsIgnoreCase("nul")? null: Country.valueOf(destinationCountry.toUpperCase());
+            City destinationCit = destinationCity.equalsIgnoreCase("nul")? null: City.valueOf(destinationCity.toUpperCase());
+            List<Trip> trips = tripRepository.findByDestinationCity(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, option1id, option2id, option3id, prixmin, prixmax);
+            return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Destination invalide: " + destinationContinent + " / " + destinationCountry + " / " + destinationCity + "."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la recherche", e.getMessage()));
+        }
+    }
 }

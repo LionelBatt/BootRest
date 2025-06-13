@@ -31,10 +31,6 @@ java -jar target/travel-agency-1.0.1-SNAPSHOT.jar
 # Tous les tests
 mvn test
 
-### Tests d'API avec curl
-```bash
-# Test de santé
-curl http://localhost:8080/app/actuator/health
 
 # Inscription
 curl -X POST http://localhost:8080/resto/api/auth/signup \
@@ -47,7 +43,7 @@ curl -X POST http://localhost:8080/resto/api/auth/login \
   -d '{"email":"test@test.com","password":"password123"}'
 
 # Test avec token JWT
-curl -X GET http://localhost:8080/app/users/profile \
+curl -X GET http://localhost:8080/app/trips/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -66,8 +62,8 @@ mvn dependency:purge-local-repository
 ## 📚 Documentation
 
 ### Swagger/OpenAPI
-- URL: http://localhost:8080/app/swagger-ui.html
-- JSON: http://localhost:8080/app/api-docs
+- URL: http://localhost:8080/travel/swagger-ui.html
+- JSON: http://localhost:8080/travel/api-docs
 
 ### Génération de Documentation
 ```bash

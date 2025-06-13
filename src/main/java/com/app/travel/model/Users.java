@@ -46,15 +46,15 @@ public class Users {
 	@Column(nullable = false)
 	private String address;
 
-	@OneToOne @JoinColumn( name = "CardInfo_ID")
-	@Column(nullable = false)
+	@OneToOne
+	@JoinColumn(name = "card_info_id")
 	private CardInfo cardInfo;
 
 	@ManyToMany
-	@JoinTable(name="Bookmarks_listings", joinColumns = @JoinColumn(name = "User_ID"), inverseJoinColumns = @JoinColumn(name = "Trip_ID"))
+	@JoinTable(name="bookmarks_listings", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "trip_id"))
 	private Collection<Trip> bookmarks;
 
-	@OneToMany(mappedBy = "userId")
+	@OneToMany(mappedBy = "user")
 	private Collection<Order> orders;
 	
 	@Enumerated(EnumType.STRING)
@@ -145,6 +145,30 @@ public class Users {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public CardInfo getCardInfo() {
+		return cardInfo;
+	}
+
+	public void setCardInfo(CardInfo cardInfo) {
+		this.cardInfo = cardInfo;
+	}
+
+	public Collection<Trip> getBookmarks() {
+		return bookmarks;
+	}
+
+	public void setBookmarks(Collection<Trip> bookmarks) {
+		this.bookmarks = bookmarks;
+	}
+
+	public Collection<Order> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(Collection<Order> orders) {
+		this.orders = orders;
 	}
 
 	public Role getRole() {

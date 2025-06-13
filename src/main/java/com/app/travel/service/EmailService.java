@@ -1,35 +1,25 @@
 package com.app.travel.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-    
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
 
     public void sendPasswordRecovery(String email, String token) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(email);
-        message.setSubject("Réinitialisation de votre mot de passe - Travel Agency");
-        message.setText("Bonjour,\n\n"
-                + "Vous avez demandé la réinitialisation de votre mot de passe.\n\n"
-                + "Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe :\n"
-                + frontendUrl + "/reset-password?token=" + token + "&email=" + email + "\n\n"
-                + "Ce lien expirera dans 1 heure.\n\n"
-                + "Si vous n'avez pas demandé cette réinitialisation, ignorez ce message.\n\n"
-                + "L'équipe Travel Agency");
-        mailSender.send(message);
+        // Service email désactivé pour le développement
+        logger.info("=== EMAIL SERVICE (MODE DÉVELOPPEMENT) ===");
+        logger.info("Email de récupération de mot de passe pour : {}", email);
+        logger.info("Token : {}", token);
+        logger.info("Lien de réinitialisation : {}/reset-password?token={}&email={}", frontendUrl, token, email);
+        logger.info("==========================================");
+        
     }
 }

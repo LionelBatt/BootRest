@@ -18,4 +18,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer>{
     @Query("select a from Orders a where a.tripStartDate > :limit")
     List<Order> findByTripStartDateAfter(Date limit);
 
+
 }

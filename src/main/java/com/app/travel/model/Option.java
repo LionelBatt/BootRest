@@ -16,9 +16,10 @@ public class Option {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "option_id")
     private int optionId;
 
-    @Column(name = "Description", nullable = false)
+    @Column(name = "description", nullable = false)
     private String desc;
 
     @Column(nullable = false)

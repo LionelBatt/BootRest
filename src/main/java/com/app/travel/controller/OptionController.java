@@ -27,14 +27,14 @@ public class OptionController {
     private OptionRepository optionRepository;
 
     @GetMapping("")
-    @Cacheable(value = "options", key = "'all'")
+    // @Cacheable(value = "options", key = "'all'") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Option>>> getAllOptions() {
         List<Option> options = optionRepository.findAll();
         return ResponseEntity.ok(ApiResponse.success("Options :", options));
     }
 
     @GetMapping("/{id}")
-    @Cacheable(value = "option-details", key = "#id")
+    // @Cacheable(value = "option-details", key = "#id") Desactiver en Dev
     public ResponseEntity<ApiResponse<Option>> getOptionById(@PathVariable int id) {
         Optional<Option> option = optionRepository.findById(id);
         if (option.isPresent()) {
@@ -46,7 +46,7 @@ public class OptionController {
     }
 
     @GetMapping("/category/{category}")
-    @Cacheable(value = "options-by-category", key = "#category")
+    // @Cacheable(value = "options-by-category", key = "#category") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Option>>> getOptionsByCategory(@PathVariable String category) {
         try {
             Category categoryEnum = Category.valueOf(category.toUpperCase());
@@ -60,7 +60,7 @@ public class OptionController {
 
 
     @GetMapping("/price/{minPrice}/{maxPrice}")
-    @Cacheable(value = "options-by-price", key = "#minPrice + ':' + #maxPrice")
+    // @Cacheable(value = "options-by-price", key = "#minPrice + ':' + #maxPrice") Desactiver en Dev 
     public ResponseEntity<ApiResponse<List<Option>>> getOptionsByPriceRange(
             @PathVariable double minPrice, @PathVariable double maxPrice) {
         

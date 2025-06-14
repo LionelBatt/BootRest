@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -39,7 +36,7 @@ public class TripController {
     private ContextUtil contextUtil;
 
     @GetMapping("")
-    @Cacheable(value = "trips", key = "'all'")
+    //@Cacheable(value = "trips", key = "'all'") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findAll() {
         try {
             List<Trip> trips = tripRepository.findAll();
@@ -51,11 +48,12 @@ public class TripController {
     }
 
     @PostMapping("")
-    @Caching(evict = { 
-        @CacheEvict(value = "trips", allEntries = true),
-        @CacheEvict(value = "trip-search", allEntries = true),
-        @CacheEvict(value = "destinations", allEntries = true)
-    })
+    // Desactiver en Dev
+    // @Caching(evict = {
+    //     @CacheEvict(value = "trips", allEntries = true),
+    //     @CacheEvict(value = "trip-search", allEntries = true),
+    //     @CacheEvict(value = "destinations", allEntries = true)
+    // }) 
     public ResponseEntity<ApiResponse<Trip>> create(@RequestBody Trip trip) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -72,12 +70,13 @@ public class TripController {
     }
 
     @PutMapping("/{id}")
-    @Caching(evict = {
-        @CacheEvict(value = "trips", allEntries = true),
-        @CacheEvict(value = "trip-details", key = "#id"),
-        @CacheEvict(value = "trip-search", allEntries = true),
-        @CacheEvict(value = "destinations", allEntries = true)
-    })
+    // Desactiver en Dev
+    // @Caching(evict = {
+    //     @CacheEvict(value = "trips", allEntries = true),
+    //     @CacheEvict(value = "trip-details", key = "#id"),
+    //     @CacheEvict(value = "trip-search", allEntries = true),
+    //     @CacheEvict(value = "destinations", allEntries = true)
+    // })
     public ResponseEntity<ApiResponse<Trip>> update(@PathVariable int id, @RequestBody Trip trip) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -101,7 +100,7 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
-    @Cacheable(value = "trip-details", key = "#id")
+    //@Cacheable(value = "trip-details", key = "#id") Desactiver en Dev
     public ResponseEntity<ApiResponse<Trip>> findById(@PathVariable int id) {
         try {
             Optional<Trip> trip = tripRepository.findById(id);
@@ -118,12 +117,13 @@ public class TripController {
     }
 
     @DeleteMapping("/{id}")
-    @Caching(evict = {
-        @CacheEvict(value = "trips", allEntries = true),
-        @CacheEvict(value = "trip-details", key = "#id"),
-        @CacheEvict(value = "trip-search", allEntries = true),
-        @CacheEvict(value = "destinations", allEntries = true)
-    })
+    // Desactiver en Dev
+    // @Caching(evict = {
+    //     @CacheEvict(value = "trips", allEntries = true),
+    //     @CacheEvict(value = "trip-details", key = "#id"),
+    //     @CacheEvict(value = "trip-search", allEntries = true),
+    //     @CacheEvict(value = "destinations", allEntries = true)
+    // })
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable int id) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -144,7 +144,7 @@ public class TripController {
     }
 
     @GetMapping("/continent/{destination}")
-    @Cacheable(value = "destinations", key = "'continent:' + #destination")
+    //@Cacheable(value = "destinations", key = "'continent:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationContinent(@PathVariable String destination) {
         try {
             Continent destinationEnum = Continent.valueOf(destination.toUpperCase());
@@ -160,7 +160,7 @@ public class TripController {
     }
 
     @GetMapping("/city/{destination}")
-    @Cacheable(value = "destinations", key = "'city:' + #destination")
+    //@Cacheable(value = "destinations", key = "'city:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationCity(@PathVariable String destination) {
         try {
             City destinationEnum = City.valueOf(destination.toUpperCase());
@@ -176,7 +176,7 @@ public class TripController {
     }
 
     @GetMapping("/country/{destination}")
-    @Cacheable(value = "destinations", key = "'country:' + #destination")
+    //@Cacheable(value = "destinations", key = "'country:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationCountry(@PathVariable String destination) {
         try {
             Country destinationEnum = Country.valueOf(destination.toUpperCase());
@@ -192,7 +192,7 @@ public class TripController {
     }
 
     @GetMapping("/user/{userId}")
-    @Cacheable(value = "destinations", key = "'user:' + #userId")
+    //@Cacheable(value = "destinations", key = "'user:' + #userId") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByUserId(@PathVariable Integer userId) {
         try {
             if (!contextUtil.canAccessUser(userId)) {
@@ -221,11 +221,12 @@ public class TripController {
      * @param prixmin (default: 0)
      * @param prixmax (default: 9999999)
      * @return List<Trip> of Trip matching research filter
-     */
+     */ 
+    // @Cacheable Desactiver en Dev
     @GetMapping("/search/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
-    @Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #option1id + ':' + #option2id + ':' + #option3id + ':' + #prixmin + ':' + #prixmax")
-    public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
-    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
+    //@Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #option1id + ':' + #option2id + ':' + #option3id + ':' + #prixmin + ':' + #prixmax")
+    public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity,
+    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin,
     @PathVariable int prixmax) {
         try {
             Continent destinationCont = destinationContinent.equalsIgnoreCase("null")? null: Continent.valueOf(destinationContinent.toUpperCase());
@@ -246,7 +247,7 @@ public class TripController {
     }
 
     @GetMapping("/search/{character}")
-    @Cacheable(value = "trip-search", key = "'character:' + #character")
+    //@Cacheable(value = "trip-search", key = "'character:' + #character") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByCharacter(@PathVariable String character) {
         try {
             List<Trip> trips = tripRepository.findByCharacter(character);

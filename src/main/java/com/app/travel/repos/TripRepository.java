@@ -35,4 +35,8 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
     @Param("minimumDuration") int minimumDuration, @Param("maximumDuration") int maximumDuration, @Param("option1") int option1, 
     @Param("option2") int option2, @Param("option3") int option3, @Param("prixmin") int prixmin, @Param("prixmax") int prixmax);
 
+    @Query("SELECT t FROM Trip t WHERE LOWER(t.DestinationCity) LIKE LOWER(CONCAT('%', :character, '%')) " +
+           "OR LOWER(t.DestinationCountry) LIKE LOWER(CONCAT('%', :character, '%')) " +
+           "OR LOWER(t.DestinationContinent) LIKE LOWER(CONCAT('%', :character, '%'))")
+    List<Trip> findByCharacter(@Param("character") String character);
 }

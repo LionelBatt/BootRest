@@ -16,9 +16,9 @@ public class ApiResponse<T> {
     private String timestamp;
     private String error;
 
-public ApiResponse() {
-    this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Paris")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-}
+    public ApiResponse() {
+        this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Paris")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
 
     public ApiResponse(boolean success, String message) {
         this();

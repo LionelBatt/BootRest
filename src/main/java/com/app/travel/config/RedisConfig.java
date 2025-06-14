@@ -60,6 +60,10 @@ public class RedisConfig {
                 .withCacheConfiguration("destinations", config.entryTtl(Duration.ofMinutes(10)))
                 .withCacheConfiguration("orders", config.entryTtl(Duration.ofMinutes(3)))
                 .withCacheConfiguration("stats", config.entryTtl(Duration.ofMinutes(1)))
+                .withCacheConfiguration("options", config.entryTtl(Duration.ofMinutes(10)))
+                .withCacheConfiguration("option-details", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("options-by-category", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("options-by-price", config.entryTtl(Duration.ofMinutes(5)))
                 .build();
     }
 }

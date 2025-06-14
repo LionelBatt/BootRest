@@ -23,7 +23,7 @@ import com.app.travel.model.Users;
 import com.app.travel.repos.OrderRepository;
 import com.app.travel.utils.ContextUtil;
 
-@CrossOrigin
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/orders")
 public class OrderController {

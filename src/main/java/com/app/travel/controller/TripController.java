@@ -27,7 +27,6 @@ import com.app.travel.model.Trip;
 import com.app.travel.repos.TripRepository;
 import com.app.travel.utils.ContextUtil;
 
-
 @CrossOrigin
 @RestController
 @RequestMapping("/trips")
@@ -134,13 +133,13 @@ public class TripController {
             Optional<Trip> existingTrip = tripRepository.findById(id);
             if (!existingTrip.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Voyage: " + id));
+                    .body(ApiResponse.error("Voyage non trouvé avec l'ID: " + id));
             }         
             tripRepository.deleteById(id);
             return ResponseEntity.ok(ApiResponse.success("Voyage supprimé avec succès"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Erreur lors de la suppression du voyage"));
+                    .body(ApiResponse.error("Erreur lors de la suppression du voyage"));
         }
     }
 
@@ -229,13 +228,12 @@ public class TripController {
     @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
     @PathVariable int prixmax) {
         try {
-
             Continent destinationCont = destinationContinent.equalsIgnoreCase("null")? null: Continent.valueOf(destinationContinent.toUpperCase());
             Country destinationCount = destinationCountry.equalsIgnoreCase("null")? null: Country.valueOf(destinationCountry.toUpperCase());
             City destinationCit = destinationCity.equalsIgnoreCase("null")? null: City.valueOf(destinationCity.toUpperCase());
-            int opt1 = (option1id == 0)? null: option1id;
-            int opt2 = (option2id == 0)? null: option2id;
-            int opt3 = (option3id == 0)? null: option3id;
+            Integer opt1 = (option1id == 0)? null: option1id;
+            Integer opt2 = (option2id == 0)? null: option2id;
+            Integer opt3 = (option3id == 0)? null: option3id;
             List<Trip> trips = tripRepository.findByDestinationCityWithOptions(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, opt1, opt2, opt3, prixmin, prixmax);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
         } catch (IllegalArgumentException e) {

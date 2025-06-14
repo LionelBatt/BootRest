@@ -60,12 +60,10 @@ public class LoginAttempt {
         this.lockedUntil = lockedUntil; 
     }
     
-    // incrementer le nombre de tentatives
     public void incrementAttempts() {
         this.attempts++;
     }
 
-    //vérifier si le compte est verrouillé
     public boolean isLocked() {
         return lockedUntil != null && LocalDateTime.now().isBefore(lockedUntil);
     }

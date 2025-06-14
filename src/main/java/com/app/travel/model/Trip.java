@@ -4,9 +4,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,22 +33,29 @@ public class Trip implements Serializable {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private Country DestinationCountry;
-    
-    @Enumerated(EnumType.STRING)
-    private Continent DestinationContinent;
+    @Column(name = "destination_country")
+    private Country destinationCountry;
 
     @Enumerated(EnumType.STRING)
-    private City DestinationCity;
+    @Column(name = "destination_continent")
+    private Continent destinationContinent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "destination_city")
+    private City destinationCity;
+
+    @Column(name = "minimum_duration")
     private int minimumDuration;
 
+    @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "trip")
+    @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Collection<Order> orders;
 
     @ManyToMany(mappedBy = "bookmarks")
+    @JsonIgnore
     private Collection<Users> lovers;
 
     @ManyToMany
@@ -56,10 +67,14 @@ public class Trip implements Serializable {
     @Version
     private int version;
 
+    public Trip() {
+        super();
+    }
+
     public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,int minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
-        this.DestinationCountry = destinationCountry;
-        this.DestinationContinent = destinationContinent;
-        this.DestinationCity = destinationCity;
+        this.destinationCountry = destinationCountry;
+        this.destinationContinent = destinationContinent;
+        this.destinationCity = destinationCity;
         this.minimumDuration = minimumDuration;
         this.description = description;
         this.packageOptions = packageOptions;
@@ -74,28 +89,28 @@ public class Trip implements Serializable {
         this.id = id;
     }
 
-    public Country getDestination_Country() {
-        return DestinationCountry;
+    public Country getDestinationCountry() {
+        return destinationCountry;
     }
 
-    public void setDestination_Country(Country destination_Country) {
-        DestinationCountry = destination_Country;
+    public void setDestinationCountry(Country destinationCountry) {
+        this.destinationCountry = destinationCountry;
     }
 
-    public Continent getDestination_Continent() {
-        return DestinationContinent;
+    public Continent getDestinationContinent() {
+        return destinationContinent;
     }
 
-    public void setDestination_Continent(Continent destination_Continent) {
-        DestinationContinent = destination_Continent;
+    public void setDestinationContinent(Continent destinationContinent) {
+        this.destinationContinent = destinationContinent;
     }
 
-    public City getDestination_City() {
-        return DestinationCity;
+    public City getDestinationCity() {
+        return destinationCity;
     }
 
-    public void setDestination_City(City destination_City) {
-        DestinationCity = destination_City;
+    public void setDestinationCity(City destinationCity) {
+        this.destinationCity = destinationCity;
     }
 
     public int getMinimumDuration() {
@@ -156,8 +171,8 @@ public class Trip implements Serializable {
 
     @Override
     public String toString() {
-        return "Trip [id=" + id + ", Destination_Country=" + DestinationCountry + ", Destination_Continent="
-                + DestinationContinent + ", Destination_City=" + DestinationCity + ", minimumDuration="
+        return "Trip [id=" + id + ", destinationCountry=" + destinationCountry + ", destinationContinent="
+                + destinationContinent + ", destinationCity=" + destinationCity + ", minimumDuration="
                 + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
                 + ", unitPrice=" + unitPrice + "]";
     }

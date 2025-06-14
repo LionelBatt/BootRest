@@ -23,7 +23,7 @@ import com.app.travel.utils.ContextUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin
 @RestController
 @RequestMapping("/users")
 public class UsersController {

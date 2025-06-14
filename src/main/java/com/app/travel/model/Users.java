@@ -2,10 +2,13 @@ package com.app.travel.model;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,11 +53,13 @@ public class Users {
 	@JoinColumn(name = "card_info_id")
 	private CardInfo cardInfo;
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name="bookmarks_listings", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "trip_id"))
+	@JsonIgnore
 	private Collection<Trip> bookmarks;
 
 	@OneToMany(mappedBy = "user")
+	@JsonIgnore
 	private Collection<Order> orders;
 	
 	@Enumerated(EnumType.STRING)
@@ -64,6 +69,7 @@ public class Users {
 	private int version;
 
 	public Users() {
+		super();
 	}
 
 	public Users(String username, String password, String email, Role role) {

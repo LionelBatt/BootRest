@@ -9,7 +9,7 @@ import com.app.travel.dto.ApiResponse;
 
 @RestController
 @RequestMapping("/test")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin
 public class TestController {
     @GetMapping("/all")
     public ApiResponse<String> allAccess() {

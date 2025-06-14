@@ -28,9 +28,10 @@ import com.app.travel.service.TokenBlacklistService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin
 public class AuthController {
 	
 	@Autowired

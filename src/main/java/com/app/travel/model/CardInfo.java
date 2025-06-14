@@ -1,5 +1,7 @@
 package com.app.travel.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,13 +19,16 @@ public class CardInfo {
     private int id;
 
     @Column(name = "card_number", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String cardNumber;
 
     @Column(name = "card_holder", nullable = false)
     private String cardHolder;
 
     @Column(name = "secret_number", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private int secretNumber;
+
 
 
     public CardInfo() {
@@ -66,5 +71,17 @@ public class CardInfo {
 
     public void setSecretNumber(int secretNumber) {
         this.secretNumber = secretNumber;
+    }
+    
+    public String getMaskedCardNumber() {
+        if (cardNumber == null || cardNumber.length() < 4) {
+            return "****";
+        }
+        return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
+    }
+
+    @Override
+    public String toString() {
+        return "CardInfo [id=" + id + ", cardHolder=" + cardHolder + ", cardNumber=" + getMaskedCardNumber() + "]";
     }
 }

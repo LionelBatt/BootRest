@@ -1,6 +1,12 @@
 package com.app.travel.controller;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.travel.dto.ApiResponse;
-import com.app.travel.service.CacheService;
 
 @RestController
 @RequestMapping("/cache")
@@ -20,100 +25,254 @@ import com.app.travel.service.CacheService;
 public class CacheController {
 
     @Autowired
-    private CacheService cacheService;
+    private RedisTemplate<String, Object> redisTemplate;
 
+    //Test de connexion ElastiCache
     @GetMapping("/health")
-    public ResponseEntity<ApiResponse<Boolean>> checkRedisHealth() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkElastiCacheHealth() {
+        Map<String, Object> healthInfo = new HashMap<>();
+        
         try {
-            boolean isHealthy = cacheService.isRedisHealthy();
-            if (isHealthy) {
-                return ResponseEntity.ok(ApiResponse.success("Redis ElastiCache est opérationnel", true));
-            } else {
-                return ResponseEntity.status(503)
-                        .body(ApiResponse.<Boolean>error("Redis ElastiCache n'est pas accessible"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.<Boolean>error("Erreur lors de la vérification Redis"));
-        }
-    }
-
-    @GetMapping("/stats")
-    public ResponseEntity<ApiResponse<Object>> getCacheStats() {
-        try {
-            Long totalTrips = cacheService.getTotalTripsCount();
-            String cacheInfo = cacheService.getCacheInfo();
+            // Test simple ping
+            String pong = redisTemplate.getConnectionFactory().getConnection().ping();
+            healthInfo.put("ping", pong);
+            healthInfo.put("connected", true);
             
-            return ResponseEntity.ok(ApiResponse.success("Statistiques du cache", 
-                java.util.Map.of(
-                    "totalTrips", totalTrips,
-                    "redisHealthy", cacheService.isRedisHealthy(),
-                    "cacheInfo", cacheInfo
-                )));
+            // Test lecture/écriture
+            String testKey = "health-check:" + System.currentTimeMillis();
+            String testValue = "ElastiCache OK";
+            
+            redisTemplate.opsForValue().set(testKey, testValue, Duration.ofSeconds(10));
+            String retrievedValue = (String) redisTemplate.opsForValue().get(testKey);
+            redisTemplate.delete(testKey);
+            
+            healthInfo.put("readWrite", testValue.equals(retrievedValue));
+            healthInfo.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.ok(ApiResponse.success("ElastiCache opérationnel", healthInfo));
+            
         } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur lors de la récupération des statistiques", null));
+            healthInfo.put("connected", false);
+            healthInfo.put("error", e.getMessage());
+            healthInfo.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(503)
+                    .body(ApiResponse.error("ElastiCache non accessible"));
         }
     }
 
-    /**
-     * Vide le cache pour un type donné
-     */
-    @DeleteMapping("/evict/{cacheName}")
-    public ResponseEntity<ApiResponse<String>> evictCache(@PathVariable String cacheName) {
+    // Statistiques détaillées ElastiCache
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getElastiCacheStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
         try {
-            cacheService.evictAllCache(cacheName);
-            return ResponseEntity.ok(ApiResponse.success("Cache '" + cacheName + "' vidé avec succès", cacheName));
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur lors de la suppression du cache", e.getMessage()));
-        }
-    }
-
-    /**
-     * Vide une clé spécifique du cache
-     */
-    @DeleteMapping("/evict/{cacheName}/{key}")
-    public ResponseEntity<ApiResponse<String>> evictCacheKey(@PathVariable String cacheName, @PathVariable String key) {
-        try {
-            cacheService.evictCache(cacheName, key);
-            return ResponseEntity.ok(ApiResponse.success("Clé '" + key + "' supprimée du cache '" + cacheName + "'", key));
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur lors de la suppression de la clé", e.getMessage()));
-        }
-    }
-
-    /**
-     * Met en cache une valeur de test
-     */
-    @PostMapping("/test")
-    public ResponseEntity<ApiResponse<String>> testCache(@RequestParam String key, @RequestParam String value) {
-        try {
-            cacheService.cacheValue("test:" + key, value, 5); // 5 minutes TTL
-            return ResponseEntity.ok(ApiResponse.success("Valeur mise en cache avec succès", "test:" + key));
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur lors de la mise en cache", e.getMessage()));
-        }
-    }
-
-    /**
-     * Récupère une valeur de test du cache
-     */
-    @GetMapping("/test/{key}")
-    public ResponseEntity<ApiResponse<Object>> getTestValue(@PathVariable String key) {
-        try {
-            Object value = cacheService.getCachedValue("test:" + key);
-            if (value != null) {
-                return ResponseEntity.ok(ApiResponse.success("Valeur trouvée dans le cache", value));
-            } else {
-                return ResponseEntity.status(404)
-                        .body(ApiResponse.error("Valeur non trouvée dans le cache", null));
+            // Compter les clés par préfixe (nos différents caches)
+            String[] cachePrefixes = {"trips:", "trip-details:", "trip-search:", "destinations:", "orders:"};
+            
+            for (String prefix : cachePrefixes) {
+                Set<String> keys = redisTemplate.keys("travel-agency:" + prefix + "*");
+                stats.put(prefix.replace(":", ""), keys != null ? keys.size() : 0);
             }
+            
+            // Statistiques globales
+            Set<String> allKeys = redisTemplate.keys("travel-agency:*");
+            stats.put("totalCachedKeys", allKeys != null ? allKeys.size() : 0);
+            stats.put("elastiCacheHealthy", true);
+            stats.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.ok(ApiResponse.success("Statistiques ElastiCache", stats));
+            
         } catch (Exception e) {
+            stats.put("error", e.getMessage());
+            stats.put("elastiCacheHealthy", false);
+            
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur lors de la récupération", e.getMessage()));
+                    .body(ApiResponse.error("Erreur statistiques ElastiCache"));
+        }
+    }
+
+    //Vider un cache spécifique
+    @DeleteMapping("/clear/{cacheType}")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> clearCacheType(@PathVariable String cacheType) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            String pattern = "travel-agency:" + cacheType + ":*";
+            Set<String> keys = redisTemplate.keys(pattern);
+            
+            if (keys != null && !keys.isEmpty()) {
+                Long deletedCount = redisTemplate.delete(keys);
+                result.put("pattern", pattern);
+                result.put("keysDeleted", deletedCount);
+                result.put("timestamp", System.currentTimeMillis());
+                
+                return ResponseEntity.ok(ApiResponse.success(
+                    "🗑️ Cache '" + cacheType + "' vidé - " + deletedCount + " clés supprimées", result));
+            } else {
+                result.put("pattern", pattern);
+                result.put("keysDeleted", 0);
+                
+                return ResponseEntity.ok(ApiResponse.success(
+                    "ℹ️ Aucune clé trouvée pour le cache '" + cacheType + "'", result));
+            }
+            
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            result.put("cacheType", cacheType);
+            
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Erreur lors du vidage du cache"));
+        }
+    }
+
+    //Vider TOUT le cache de l'application
+    @DeleteMapping("/clear-all")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> clearAllCache() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            String pattern = "travel-agency:*";
+            Set<String> keys = redisTemplate.keys(pattern);
+            
+            if (keys != null && !keys.isEmpty()) {
+                Long deletedCount = redisTemplate.delete(keys);
+                result.put("pattern", pattern);
+                result.put("totalKeysDeleted", deletedCount);
+                result.put("timestamp", System.currentTimeMillis());
+                
+                return ResponseEntity.ok(ApiResponse.success(
+                    "🗑️ Tous les caches vidés - " + deletedCount + " clés supprimées", result));
+            } else {
+                result.put("totalKeysDeleted", 0);
+                
+                return ResponseEntity.ok(ApiResponse.success("Aucun cache à vider", result));
+            }
+            
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Erreur lors du vidage complet"));
+        }
+    }
+
+    //Test de performance ElastiCache
+    @PostMapping("/performance-test")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> performanceTest(
+            @RequestParam(defaultValue = "100") int operations) {
+        
+        Map<String, Object> perfResults = new HashMap<>();
+        
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            // Test d'écriture
+            long writeStart = System.currentTimeMillis();
+            for (int i = 0; i < operations; i++) {
+                redisTemplate.opsForValue().set(
+                    "perf-test:" + i, 
+                    "Test value " + i, 
+                    Duration.ofMinutes(1)
+                );
+            }
+            long writeTime = System.currentTimeMillis() - writeStart;
+            
+            // Test de lecture
+            long readStart = System.currentTimeMillis();
+            for (int i = 0; i < operations; i++) {
+                redisTemplate.opsForValue().get("perf-test:" + i);
+            }
+            long readTime = System.currentTimeMillis() - readStart;
+            
+            // Nettoyage
+            Set<String> testKeys = redisTemplate.keys("perf-test:*");
+            if (testKeys != null && !testKeys.isEmpty()) {
+                redisTemplate.delete(testKeys);
+            }
+            
+            long totalTime = System.currentTimeMillis() - startTime;
+            
+            perfResults.put("operations", operations);
+            perfResults.put("writeTimeMs", writeTime);
+            perfResults.put("readTimeMs", readTime);
+            perfResults.put("totalTimeMs", totalTime);
+            perfResults.put("avgWriteMs", (double) writeTime / operations);
+            perfResults.put("avgReadMs", (double) readTime / operations);
+            perfResults.put("operationsPerSecond", (double) (operations * 2) / (totalTime / 1000.0));
+            
+            return ResponseEntity.ok(ApiResponse.success(
+                "⚡ Test de performance ElastiCache terminé", perfResults));
+            
+        } catch (Exception e) {
+            perfResults.put("error", e.getMessage());
+            perfResults.put("operations", operations);
+            
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Erreur test de performance"));
+        }
+    }
+
+    //Tester une clé spécifique
+    @GetMapping("/test-key/{key}")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> testSpecificKey(@PathVariable String key) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            String fullKey = "travel-agency:test:" + key;
+            
+            // Vérifier si la clé existe
+            Boolean exists = redisTemplate.hasKey(fullKey);
+            result.put("keyExists", exists);
+            result.put("fullKey", fullKey);
+            
+            if (Boolean.TRUE.equals(exists)) {
+                Object value = redisTemplate.opsForValue().get(fullKey);
+                Long ttl = redisTemplate.getExpire(fullKey);
+                
+                result.put("value", value);
+                result.put("ttlSeconds", ttl);
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("🔍 Informations sur la clé", result));
+            
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            result.put("key", key);
+            
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Erreur lors de la vérification"));
+        }
+    }
+
+    //Créer une clé de test
+    @PostMapping("/test-key")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createTestKey(
+            @RequestParam String key, 
+            @RequestParam String value,
+            @RequestParam(defaultValue = "300") int ttlSeconds) {
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            String fullKey = "travel-agency:test:" + key;
+            
+            redisTemplate.opsForValue().set(fullKey, value, Duration.ofSeconds(ttlSeconds));
+            
+            result.put("fullKey", fullKey);
+            result.put("value", value);
+            result.put("ttlSeconds", ttlSeconds);
+            result.put("created", true);
+            
+            return ResponseEntity.ok(ApiResponse.success("Clé de test créée", result));
+            
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            result.put("key", key);
+            result.put("created", false);
+            
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Erreur création clé test"));
         }
     }
 }

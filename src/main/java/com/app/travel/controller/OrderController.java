@@ -45,7 +45,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commandes récupérées avec succès", orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des commandes", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des commandes"));
         }
     }
 
@@ -61,7 +61,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Vos commandes récupérées avec succès", orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération de vos commandes", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération de vos commandes"));
         }
     }
 
@@ -79,7 +79,7 @@ public class OrderController {
                     .body(ApiResponse.success("Commande créée avec succès", savedOrder));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Erreur lors de la création de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la création de la commande"));
         }
     }
 
@@ -108,7 +108,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commande mise à jour avec succès", updatedOrder));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la mise à jour de la commande"));
         }
     }
 
@@ -132,7 +132,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commande trouvée", List.of(order)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche de la commande"));
         }
     }
 
@@ -157,7 +157,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commande supprimée avec succès"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la suppression de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la suppression de la commande"));
         }
     }
 
@@ -174,7 +174,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commandes trouvées pour l'utilisateur: " + userid, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur"));
 
         }
     }
@@ -199,7 +199,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commandes créées après la date: " + limit, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de création", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de création"));
         }
     }
 
@@ -223,7 +223,7 @@ public class OrderController {
             return ResponseEntity.ok(ApiResponse.success("Commandes de voyages commençant après la date: " + limit, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de début de voyage", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de début de voyage"));
         }
     }
 }

@@ -1,8 +1,11 @@
 package com.app.travel.dto;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
@@ -10,12 +13,12 @@ public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
-    private LocalDateTime timestamp;
+    private String timestamp;
     private String error;
 
-    public ApiResponse() {
-        this.timestamp = LocalDateTime.now();
-    }
+public ApiResponse() {
+    this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Paris")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+}
 
     public ApiResponse(boolean success, String message) {
         this();
@@ -52,9 +55,10 @@ public class ApiResponse<T> {
         return response;
     }
 
-    public static <T> ApiResponse<T> error(String message, String error) {
+    public static <T> ApiResponse<T> error(String message, T data) {
         ApiResponse<T> response = new ApiResponse<>(false, message);
-        response.setError(error);
+        response.setError(message);
+        response.setData(data);
         return response;
     }
 
@@ -82,11 +86,11 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    public LocalDateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 

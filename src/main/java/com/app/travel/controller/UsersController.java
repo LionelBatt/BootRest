@@ -53,7 +53,7 @@ public class UsersController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la récupération des utilisateurs", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la récupération des utilisateurs"));
         }
     }
 
@@ -73,7 +73,7 @@ public class UsersController {
             return ResponseEntity.ok(ApiResponse.success("Utilisateur trouvé", user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des informations utilisateur", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des informations utilisateur"));
         }
     }
 
@@ -89,7 +89,7 @@ public class UsersController {
             }            
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération du profil", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération du profil"));
         }
     }
 
@@ -112,7 +112,7 @@ public class UsersController {
             return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour des informations", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la mise à jour des informations"));
         }
     }
 

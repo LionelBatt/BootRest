@@ -47,7 +47,7 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Voyages:", trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des voyages", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des voyages"));
         }
     }
 
@@ -68,7 +68,7 @@ public class TripController {
                 .body(ApiResponse.success("Voyage créé avec succès", createdTrip));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Erreur lors de la création du voyage", e.getMessage()));
+                .body(ApiResponse.error("Erreur lors de la création du voyage"));
         }
     }
 
@@ -97,7 +97,7 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Voyage mis à jour avec succès", updatedTrip));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour du voyage", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la mise à jour du voyage"));
         }
     }
 
@@ -114,7 +114,7 @@ public class TripController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Erreur lors de la recherche du voyage", e.getMessage()));
+                .body(ApiResponse.error("Erreur lors de la recherche du voyage"));
         }
     }
 
@@ -140,7 +140,7 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Voyage supprimé avec succès"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Erreur lors de la suppression du voyage", e.getMessage()));
+                .body(ApiResponse.error("Erreur lors de la suppression du voyage"));
         }
     }
 
@@ -156,7 +156,7 @@ public class TripController {
                     .body(ApiResponse.error("Continent de destination invalide: " + destination + "."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par continent de destination", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par continent de destination"));
         }
     }
 
@@ -172,7 +172,7 @@ public class TripController {
                     .body(ApiResponse.error("Destination invalide: " + destination + ". Destinations disponibles: PARIS, LONDON"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par destination", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par destination"));
         }
     }
 
@@ -188,7 +188,7 @@ public class TripController {
                     .body(ApiResponse.error("Pays de destination invalide: " + destination + "."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par pays de destination", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par pays de destination"));
         }
     }
 
@@ -204,7 +204,7 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Voyages de l'utilisateur: " + userId, trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur"));
         }
     }
 
@@ -243,7 +243,7 @@ public class TripController {
                     .body(ApiResponse.error("Destination invalide: " + destinationContinent + " / " + destinationCountry + " / " + destinationCity + "."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche"));
         }
     }
 
@@ -255,7 +255,7 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés contenant le caractère: " + character, trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par caractère", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par caractère"));
         }
     }
 }

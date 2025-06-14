@@ -50,6 +50,7 @@ MAIL_HOST=PLACEHOLDER_MAIL_HOST
 MAIL_PORT=587
 MAIL_USER=PLACEHOLDER_MAIL_USER
 MAIL_PASSWORD=PLACEHOLDER_MAIL_PASSWORD
+REDIS_HOST=PLACEHOLDER_REDIS_HOST
 ENV_CONTENT
 
 chmod 600 "$ENV_FILE"
@@ -154,6 +155,7 @@ echo "✅ Image Docker créée"
 echo "🔍 Variables d'environnement:"
 echo "DB_URL=$DB_URL"
 echo "DB_USER=$DB_USER"
+echo "REDIS_HOST=$REDIS_HOST"
 echo "JWT_SECRET length: ${#JWT_SECRET}"
 
 # Démarrer le conteneur avec variables explicites
@@ -173,6 +175,7 @@ docker run -d \
     -e "MAIL_PORT=$MAIL_PORT" \
     -e "MAIL_USER=$MAIL_USER" \
     -e "MAIL_PASSWORD=$MAIL_PASSWORD" \
+    -e "REDIS_HOST=$REDIS_HOST" \
     -e "SERVER_PORT=8080" \
     -e "LOGGING_LEVEL_ROOT=INFO" \
     -e "LOGGING_FILE_PATH=/app/logs/application.log" \

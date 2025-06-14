@@ -89,7 +89,7 @@ fi
 
 # Télécharger le JAR depuis S3
 echo "📥 Téléchargement du JAR depuis S3..."
-JAR_URL="https://$S3_BUCKET.s3.$AWS_REGION.amazonaws.com/app/$JAR_FILE"
+JAR_URL="https://s3.$AWS_REGION.amazonaws.com/$S3_BUCKET/app/$JAR_FILE"
 echo "🔗 URL: $JAR_URL"
 
 curl -f -L -o "$JAR_FILE" "$JAR_URL"

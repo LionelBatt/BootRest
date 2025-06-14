@@ -1,7 +1,7 @@
 package com.app.travel.model;
 
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,7 +18,9 @@ import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "trips")
-public class Trip {
+public class Trip implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +35,7 @@ public class Trip {
     @Enumerated(EnumType.STRING)
     private City DestinationCity;
 
-    private Date minimumDuration;
+    private int minimumDuration;
 
     private String description;
 
@@ -52,7 +54,7 @@ public class Trip {
     @Version
     private int version;
 
-    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
+    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,int minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
         this.DestinationCountry = destinationCountry;
         this.DestinationContinent = destinationContinent;
         this.DestinationCity = destinationCity;
@@ -94,11 +96,11 @@ public class Trip {
         DestinationCity = destination_City;
     }
 
-    public Date getMinimumDuration() {
+    public int getMinimumDuration() {
         return minimumDuration;
     }
 
-    public void setMinimumDuration(Date minimumDuration) {
+    public void setMinimumDuration(int minimumDuration) {
         this.minimumDuration = minimumDuration;
     }
 

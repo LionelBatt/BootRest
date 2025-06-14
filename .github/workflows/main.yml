@@ -158,13 +158,14 @@ jobs:
       run: |
         chmod +x .github/scripts/create-deployment-script.sh
         ./.github/scripts/create-deployment-script.sh \
-          "${{ secrets.DB_URL || 'jdbc:postgresql://localhost:5432/travel_db' }}" \
+          "${{ secrets.DB_URL || 'jdbc:mysql://localhost:3306/travel_db' }}" \
           "${{ secrets.DB_USER || 'travel_user' }}" \
           "${{ secrets.DB_PASSWORD || 'travel_password_123' }}" \
           "${{ secrets.JWT_SECRET || 'myVeryLongSecretKeyForJwtTokensAtLeast32CharactersLong123456789' }}" \
           "${{ secrets.MAIL_HOST || 'smtp.gmail.com' }}" \
           "${{ secrets.MAIL_USER || 'your.email@gmail.com' }}" \
           "${{ secrets.MAIL_PASSWORD || 'your_app_password' }}" \
+          "${{ secrets.REDIS_HOST || 'your_redis_host' }}" \
           "${S3_BUCKET_TEMP}" \
           "${{ env.AWS_REGION }}" \
           "${{ env.APP_VERSION }}"

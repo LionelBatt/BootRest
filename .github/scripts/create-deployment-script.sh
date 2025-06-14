@@ -163,7 +163,7 @@ echo "🚀 Démarrage du conteneur..."
 docker run -d \
     --name "$CONTAINER_NAME" \
     --restart unless-stopped \
-    -p 8080:8080 \
+    --network host \
     -v "$LOGS_DIR:/app/logs:rw" \
     -v "$DATA_DIR:/app/data:rw" \
     -e "DB_URL=$DB_URL" \
@@ -176,6 +176,7 @@ docker run -d \
     -e "MAIL_USER=$MAIL_USER" \
     -e "MAIL_PASSWORD=$MAIL_PASSWORD" \
     -e "REDIS_HOST=$REDIS_HOST" \
+    -e "REDIS_PORT=6379" \
     -e "SERVER_PORT=8080" \
     -e "LOGGING_LEVEL_ROOT=INFO" \
     -e "LOGGING_FILE_PATH=/app/logs/application.log" \

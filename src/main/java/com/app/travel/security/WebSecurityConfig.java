@@ -100,7 +100,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/options/categories/**").permitAll()
 
                 // Cache - Seulement pour les admins
-                .requestMatchers("/cache/**").hasRole("ADMIN")
+                //.requestMatchers("/cache/**").hasRole("ADMIN")
 
                 //Tous les autres endpoints nécessitent une authentification au pour etre plus explicite
                 .requestMatchers("/travel/**").authenticated()

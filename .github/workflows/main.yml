@@ -7,7 +7,6 @@ on:
     branches: [ main ]
 
 env:
-  AWS_REGION: eu-west-3
   S3_BUCKET: prod-resto
   EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
   APP_VERSION: 1.0.1-SNAPSHOT
@@ -118,13 +117,13 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: 🪣 Création du bucket S3 temporaire
       run: |
         BUCKET_NAME="travel-agency-deploy-$(date +%Y%m%d%H%M%S)"
         echo "S3_BUCKET_TEMP=$BUCKET_NAME" >> $GITHUB_ENV
-        aws s3 mb s3://$BUCKET_NAME --region ${{ env.AWS_REGION }}
+        aws s3 mb s3://$BUCKET_NAME --region ${{ secrets.AWS_REGION }}
         aws s3api put-public-access-block \
           --bucket $BUCKET_NAME \
           --public-access-block-configuration \
@@ -158,16 +157,16 @@ jobs:
       run: |
         chmod +x .github/scripts/create-deployment-script.sh
         ./.github/scripts/create-deployment-script.sh \
-          "${{ secrets.DB_URL || 'jdbc:mysql://localhost:3306/travel_db' }}" \
+          "${{ secrets.DB_URL || 'jdbc:mysql://localhost:5432/travel_db' }}" \
           "${{ secrets.DB_USER || 'travel_user' }}" \
           "${{ secrets.DB_PASSWORD || 'travel_password_123' }}" \
           "${{ secrets.JWT_SECRET || 'myVeryLongSecretKeyForJwtTokensAtLeast32CharactersLong123456789' }}" \
           "${{ secrets.MAIL_HOST || 'smtp.gmail.com' }}" \
           "${{ secrets.MAIL_USER || 'your.email@gmail.com' }}" \
           "${{ secrets.MAIL_PASSWORD || 'your_app_password' }}" \
-          "${{ secrets.REDIS_HOST || 'your_redis_host' }}" \
+          "${{ secrets.REDIS_HOST || 'localhost' }}" \
           "${S3_BUCKET_TEMP}" \
-          "${{ env.AWS_REGION }}" \
+          "${{ secrets.AWS_REGION }}" \
           "${{ env.APP_VERSION }}"
 
     - name: 🚀 Déploiement sur EC2

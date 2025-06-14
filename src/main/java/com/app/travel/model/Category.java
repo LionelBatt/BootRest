@@ -1,9 +1,15 @@
 package com.app.travel.model;
 
 public enum Category {
-    
-    HOUSING,
+    ACCOMMODATION,
     TRAVEL,
     LUXURY,
-    EVENT
+    EVENT,
+    MEALS,
+    WELLNESS,
+    TRANSPORT,
+    OTHERS,
+    ACTIVITIES,
+    SERVICES,
+    PACKAGE
 }

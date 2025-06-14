@@ -248,6 +248,7 @@ public class TripController {
     }
 
     @GetMapping("/search/{character}")
+    @Cacheable(value = "trip-search", key = "'character:' + #character")
     public ResponseEntity<ApiResponse<List<Trip>>> findByCharacter(@PathVariable String character) {
         try {
             List<Trip> trips = tripRepository.findByCharacter(character);

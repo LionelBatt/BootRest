@@ -34,22 +34,22 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AuthController {
 	
 	@Autowired
-	AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	UserRepository repos;
+	private UserRepository repos;
 	
 	@Autowired
-	PasswordEncoder encoder;
+	private PasswordEncoder encoder;
 	
 	@Autowired
-	JwtUtil jwtUtils;
+	private JwtUtil jwtUtils;
 	
 	@Autowired
-	LoginAttemptService loginAttemptService;
+	private LoginAttemptService loginAttemptService;
 
 	@Autowired
-	TokenBlacklistService tokenBlacklistService;
+	private TokenBlacklistService tokenBlacklistService;
 
 	@PostMapping("/signin")
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {

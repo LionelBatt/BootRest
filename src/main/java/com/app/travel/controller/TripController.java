@@ -132,7 +132,7 @@ public class TripController {
                     .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
             Optional<Trip> existingTrip = tripRepository.findById(id);
-            if (existingTrip.isEmpty()) {
+            if (!existingTrip.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("Voyage: " + id));
             }         

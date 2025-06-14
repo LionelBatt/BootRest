@@ -87,7 +87,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<Order>> updateOrder(@PathVariable int id, @RequestBody Order order) {
         try {
             Optional<Order> existingOrderOpt = orderRepository.findById(id);
-            if (existingOrderOpt.isEmpty()) {
+            if (!existingOrderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
             }
@@ -117,7 +117,7 @@ public class OrderController {
         try {
 
             Optional<Order> orderOpt = orderRepository.findById(id);
-            if (orderOpt.isEmpty()) {
+            if (!orderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
             }
@@ -141,7 +141,7 @@ public class OrderController {
         try {
             
             Optional<Order> orderOpt = orderRepository.findById(id);
-            if (orderOpt.isEmpty()) {
+            if (!orderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
             }

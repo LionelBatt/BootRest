@@ -1,5 +1,6 @@
 package com.app.travel.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -20,6 +21,7 @@ import jakarta.persistence.Version;
 @Table(name = "trips")
 public class Trip implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id

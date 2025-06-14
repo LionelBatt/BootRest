@@ -21,7 +21,7 @@ import com.app.travel.service.PasswordResetService;
 public class PasswordResetController {
 	
 	@Autowired
-	PasswordResetService service;
+	private PasswordResetService service;
 
 	@PostMapping("/forgot")
 	public ApiResponse<String> forgotPassword(@RequestBody Users request) {

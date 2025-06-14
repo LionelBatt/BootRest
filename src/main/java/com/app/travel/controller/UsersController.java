@@ -29,16 +29,16 @@ import jakarta.servlet.http.HttpServletRequest;
 public class UsersController {
 
     @Autowired
-	UserRepository repos;
+	private UserRepository repos;
 
     @Autowired
-    TokenBlacklistService tokenBlacklistService;
+    private TokenBlacklistService tokenBlacklistService;
 
     @Autowired
-    JwtUtil jwtUtil;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    ContextUtil contextUtil;
+    private ContextUtil contextUtil;
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Users>>> getAllUsers(){

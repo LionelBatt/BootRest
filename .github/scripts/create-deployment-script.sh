@@ -13,6 +13,7 @@ MAIL_PASSWORD_VALUE="$7"
 S3_BUCKET_TEMP="$8"
 AWS_REGION="$9"
 APP_VERSION="${10}"
+REDIS_URL="${11}"
 
 echo "🔧 Création du script de déploiement avec les secrets..."
 
@@ -49,6 +50,7 @@ MAIL_HOST=PLACEHOLDER_MAIL_HOST
 MAIL_PORT=587
 MAIL_USER=PLACEHOLDER_MAIL_USER
 MAIL_PASSWORD=PLACEHOLDER_MAIL_PASSWORD
+REDIS_URL=PLACEHOLDER_REDIS_URL
 ENV_CONTENT
 
 chmod 600 "$ENV_FILE"
@@ -172,6 +174,7 @@ docker run -d \
     -e "MAIL_PORT=$MAIL_PORT" \
     -e "MAIL_USER=$MAIL_USER" \
     -e "MAIL_PASSWORD=$MAIL_PASSWORD" \
+    -e "REDIS_URL=$REDIS_URL" \
     -e "SERVER_PORT=8080" \
     -e "LOGGING_LEVEL_ROOT=INFO" \
     -e "LOGGING_FILE_PATH=/app/logs/application.log" \
@@ -219,6 +222,7 @@ sed -i "s|PLACEHOLDER_MAIL_PASSWORD|$MAIL_PASSWORD_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_S3_BUCKET|$S3_BUCKET_TEMP|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_AWS_REGION|$AWS_REGION|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_APP_VERSION|$APP_VERSION|g" deploy_embedded.sh
+sed -i "s|PLACEHOLDER_REDIS_URL|$REDIS_URL|g" deploy_embedded.sh
 
 chmod +x deploy_embedded.sh
 echo "✅ Script de déploiement créé avec succès"

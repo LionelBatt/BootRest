@@ -3,6 +3,7 @@ package com.app.travel.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -68,7 +69,7 @@ public class WebSecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Swagger/OpenAPI endpoints - Configuration pour context-path /travel (DOIT ÊTRE EN PREMIER)
+                // Swagger/OpenAPI endpoints - Configuration pour context-path /travel
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs").permitAll()
                 .requestMatchers("/travel/v3/api-docs/**", "/travel/v3/api-docs").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
@@ -79,15 +80,31 @@ public class WebSecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                       
                 // Endpoints publics d'authentification
-                .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
-                .requestMatchers("/api/password-recovery/**").permitAll()
+                .requestMatchers("/auth/**", "/test/**").permitAll()
+                .requestMatchers("/password-recovery/**").permitAll()
                           
                 // Endpoints pour les ressources statiques
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                 
-                // Endpoints des trips
-                .requestMatchers("/trips/**").authenticated()
-                            
+                // Trips - Endpoints publics (lecture seule pour le front)
+                .requestMatchers(HttpMethod.GET, "/trips").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/continent/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/country/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/city/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/search/**").permitAll()
+                
+                // Options - Public en lecture, sécurisé en écriture
+                .requestMatchers(HttpMethod.GET, "/options").permitAll()
+                .requestMatchers(HttpMethod.GET, "/options/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/options/categories/**").permitAll()
+
+                // Cache - Seulement pour les admins
+                .requestMatchers("/cache/**").hasRole("ADMIN")
+
+                //Tous les autres endpoints nécessitent une authentification au pour etre plus explicite
+                .requestMatchers("/travel/**").authenticated()
+
                 //Tous les autres requêtes nécessitent une authentification
                 .anyRequest().authenticated()
             );

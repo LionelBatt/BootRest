@@ -207,7 +207,14 @@ echo ""
 EOF
 
 # Remplacement du mot de passe dans le script
-sed -i '' "s/REDIS_PASSWORD_PLACEHOLDER/$REDIS_PASSWORD/g" deploy_redis.sh
+# Compatible macOS et Linux
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "s/REDIS_PASSWORD_PLACEHOLDER/$REDIS_PASSWORD/g" deploy_redis.sh
+else
+    # Linux (GitHub Actions)
+    sed -i "s/REDIS_PASSWORD_PLACEHOLDER/$REDIS_PASSWORD/g" deploy_redis.sh
+fi
 
 chmod +x deploy_redis.sh
 

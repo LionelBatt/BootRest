@@ -1,6 +1,6 @@
 # Travel Agency API
 
-Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage avec système de cache Redis optimisé.
+Une API REST construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage avec système de cache Redis optimisé.
 
 ## 🚀 Fonctionnalités
 

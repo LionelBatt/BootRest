@@ -28,30 +28,31 @@ import com.app.travel.service.TokenBlacklistService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+
 @RestController
-@RequestMapping("/api/auth")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/auth")
+@CrossOrigin
 public class AuthController {
 	
 	@Autowired
-	AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	UserRepository repos;
+	private UserRepository repos;
 	
 	@Autowired
-	PasswordEncoder encoder;
+	private PasswordEncoder encoder;
 	
 	@Autowired
-	JwtUtil jwtUtils;
+	private JwtUtil jwtUtils;
 	
 	@Autowired
-	LoginAttemptService loginAttemptService;
+	private LoginAttemptService loginAttemptService;
 
 	@Autowired
-	TokenBlacklistService tokenBlacklistService;
+	private TokenBlacklistService tokenBlacklistService;
 
-	@PostMapping("/login")
+	@PostMapping("/signin")
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {
 		String username = user.getUsername();
 
@@ -87,10 +88,10 @@ public class AuthController {
 		}
 	}
 	
-	@PostMapping("/signup")
+    @PostMapping("/signup")
 	public ApiResponse<String> registerUser(@RequestBody Users user) {
 		if (repos.existsByUsername(user.getUsername())) {
-			return ApiResponse.error("Erreur d'inscription", "Le nom d'utilisateur est déjà pris!");
+			return ApiResponse.error("Erreur", "Le nom d'utilisateur est déjà pris!");
 		}
 		try {
 			Users newUser = new Users(
@@ -110,9 +111,9 @@ public class AuthController {
 		}
 	}
 
-	@PostMapping("/logout")
-	@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-	public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+    @PostMapping("/signout")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+	public ResponseEntity<?> signoutUser(HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");
 
 		if (authHeader != null && authHeader.startsWith("Bearer ")) {

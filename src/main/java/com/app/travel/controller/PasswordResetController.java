@@ -16,12 +16,12 @@ import com.app.travel.model.Users;
 import com.app.travel.service.PasswordResetService;
 
 @RestController
-@RequestMapping("/api/password-recovery")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/password-recovery")
+@CrossOrigin
 public class PasswordResetController {
 	
 	@Autowired
-	PasswordResetService service;
+	private PasswordResetService service;
 
 	@PostMapping("/forgot")
 	public ApiResponse<String> forgotPassword(@RequestBody Users request) {

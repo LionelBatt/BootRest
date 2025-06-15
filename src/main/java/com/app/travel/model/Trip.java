@@ -1,11 +1,16 @@
 package com.app.travel.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,32 +23,42 @@ import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "trips")
-public class Trip {
+public class Trip implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private Country DestinationCountry;
-    
-    @Enumerated(EnumType.STRING)
-    private Continent DestinationContinent;
+    @Column(name = "destination_country")
+    private Country destinationCountry;
 
     @Enumerated(EnumType.STRING)
-    private City DestinationCity;
+    @Column(name = "destination_continent")
+    private Continent destinationContinent;
 
-    private Date minimumDuration;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "destination_city")
+    private City destinationCity;
 
+    @Column(name = "minimum_duration")
+    private int minimumDuration;
+
+    @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "trip")
+    @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Collection<Order> orders;
 
     @ManyToMany(mappedBy = "bookmarks")
+    @JsonIgnore
     private Collection<Users> lovers;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
     private Collection<Option> packageOptions;
 
@@ -52,10 +67,14 @@ public class Trip {
     @Version
     private int version;
 
-    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,Date minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
-        this.DestinationCountry = destinationCountry;
-        this.DestinationContinent = destinationContinent;
-        this.DestinationCity = destinationCity;
+    public Trip() {
+        super();
+    }
+
+    public Trip(Country destinationCountry, Continent destinationContinent, City destinationCity,int minimumDuration, String description, Collection<Option> packageOptions, int unitPrice) {
+        this.destinationCountry = destinationCountry;
+        this.destinationContinent = destinationContinent;
+        this.destinationCity = destinationCity;
         this.minimumDuration = minimumDuration;
         this.description = description;
         this.packageOptions = packageOptions;
@@ -70,35 +89,35 @@ public class Trip {
         this.id = id;
     }
 
-    public Country getDestination_Country() {
-        return DestinationCountry;
+    public Country getDestinationCountry() {
+        return destinationCountry;
     }
 
-    public void setDestination_Country(Country destination_Country) {
-        DestinationCountry = destination_Country;
+    public void setDestinationCountry(Country destinationCountry) {
+        this.destinationCountry = destinationCountry;
     }
 
-    public Continent getDestination_Continent() {
-        return DestinationContinent;
+    public Continent getDestinationContinent() {
+        return destinationContinent;
     }
 
-    public void setDestination_Continent(Continent destination_Continent) {
-        DestinationContinent = destination_Continent;
+    public void setDestinationContinent(Continent destinationContinent) {
+        this.destinationContinent = destinationContinent;
     }
 
-    public City getDestination_City() {
-        return DestinationCity;
+    public City getDestinationCity() {
+        return destinationCity;
     }
 
-    public void setDestination_City(City destination_City) {
-        DestinationCity = destination_City;
+    public void setDestinationCity(City destinationCity) {
+        this.destinationCity = destinationCity;
     }
 
-    public Date getMinimumDuration() {
+    public int getMinimumDuration() {
         return minimumDuration;
     }
 
-    public void setMinimumDuration(Date minimumDuration) {
+    public void setMinimumDuration(int minimumDuration) {
         this.minimumDuration = minimumDuration;
     }
 
@@ -152,8 +171,8 @@ public class Trip {
 
     @Override
     public String toString() {
-        return "Trip [id=" + id + ", Destination_Country=" + DestinationCountry + ", Destination_Continent="
-                + DestinationContinent + ", Destination_City=" + DestinationCity + ", minimumDuration="
+        return "Trip [id=" + id + ", destinationCountry=" + destinationCountry + ", destinationContinent="
+                + destinationContinent + ", destinationCity=" + destinationCity + ", minimumDuration="
                 + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
                 + ", unitPrice=" + unitPrice + "]";
     }

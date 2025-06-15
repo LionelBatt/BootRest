@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.travel.dto.ApiResponse;
 
 @RestController
-@RequestMapping("/api/test")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/test")
+@CrossOrigin
 public class TestController {
     @GetMapping("/all")
     public ApiResponse<String> allAccess() {

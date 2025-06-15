@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.travel.dto.ApiResponse;
 import com.app.travel.model.Order;
+import com.app.travel.model.Users;
 import com.app.travel.repos.OrderRepository;
+import com.app.travel.utils.ContextUtil;
 
-@CrossOrigin
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -29,117 +31,199 @@ public class OrderController {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private ContextUtil contextUtil;
+
     @GetMapping("")
-    public ResponseEntity<ApiResponse<List<Order>>> findAll() {
+    public ResponseEntity<ApiResponse<List<Order>>> getAllOrders() {
         try {
+            if (!contextUtil.isAdmin()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
             List<Order> orders = orderRepository.findAll();
-            return ResponseEntity.ok(ApiResponse.success("Commandes récupérés avec succès", orders));
+            return ResponseEntity.ok(ApiResponse.success("Commandes récupérées avec succès", orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des commandes", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des commandes"));
+        }
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<ApiResponse<List<Order>>> getMyOrders() {
+        try {
+            Users currentUser = contextUtil.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
+            }       
+            List<Order> orders = orderRepository.findByUserUserId(currentUser.getUserId());
+            return ResponseEntity.ok(ApiResponse.success("Vos commandes récupérées avec succès", orders));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération de vos commandes"));
         }
     }
 
     @PostMapping("")
-    public ResponseEntity<ApiResponse<Order>> create(@RequestBody Order order) {
+    public ResponseEntity<ApiResponse<Order>> createOrder(@RequestBody Order order) {
         try {
+            Users currentUser = contextUtil.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
+            }
+            order.setUser(currentUser);
             Order savedOrder = orderRepository.save(order);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Commande créé avec succès", savedOrder));
+                    .body(ApiResponse.success("Commande créée avec succès", savedOrder));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Erreur lors de la création du Commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la création de la commande"));
         }
     }
 
-    @PutMapping("")
-    public ResponseEntity<ApiResponse<Order>> update(@RequestBody Order order) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Order>> updateOrder(@PathVariable int id, @RequestBody Order order) {
         try {
-            if (order.getOrderId() == 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiResponse.error("ID de la commande requis pour la mise à jour"));
-            }
-            
-            Optional<Order> existingorder = orderRepository.findById(order.getOrderId());
-            if (existingorder.isEmpty()) {
+            Optional<Order> existingOrderOpt = orderRepository.findById(id);
+            if (!existingOrderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Commande non trouvé avec l'ID: " + order.getOrderId()));
+                        .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
+            }
+            Order existingOrder = existingOrderOpt.get();
+            
+            if (!contextUtil.canAccessUser(existingOrder.getUser())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
 
+            order.setOrderId(id);
+
+            if (!contextUtil.isAdmin()) {
+                order.setUser(existingOrder.getUser());
+            }
+            
             Order updatedOrder = orderRepository.save(order);
-            return ResponseEntity.ok(ApiResponse.success("Commande mis à jour avec succès", updatedOrder));
+            return ResponseEntity.ok(ApiResponse.success("Commande mise à jour avec succès", updatedOrder));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la mise à jour de la commande"));
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Order>> findById(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<List<Order>>> getOrderById(@PathVariable int id) {
         try {
-            Optional<Order> order = orderRepository.findById(id);
-            if (order.isPresent()) {
-                return ResponseEntity.ok(ApiResponse.success("Commande trouvée", order.get()));
-            } else {
+
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (!orderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
             }
+            
+            Order order = orderOpt.get();
+            
+            if (!contextUtil.canAccessUser(order.getUser())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("Commande trouvée", List.of(order)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche de la commande"));
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(@PathVariable int id) {
         try {
-            Optional<Order> existingorder = orderRepository.findById(id);
-            if (existingorder.isEmpty()) {
+            
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (!orderOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
+            }
+            
+            Order order = orderOpt.get();
+            
+            if (!contextUtil.canAccessUser(order.getUser())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
             
             orderRepository.deleteById(id);
             return ResponseEntity.ok(ApiResponse.success("Commande supprimée avec succès"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la suppression de la commande", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la suppression de la commande"));
         }
     }
 
-    @GetMapping("/userid/{userid}")
-    public ResponseEntity<ApiResponse<List<Order>>> findByUserId(@PathVariable int userid) {
+    @GetMapping("/users/{userid}")
+    public ResponseEntity<ApiResponse<List<Order>>> getOrdersByUserId(@PathVariable int userid) {
         try {
-            List<Order> orders = orderRepository.findByUserId(userid);
-            return ResponseEntity.ok(ApiResponse.success("Commande trouvées pour l'utilisateur: " + userid, orders));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Utilisateur invalide: " + userid + "."));
+
+            if (!contextUtil.canAccessUser(userid)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+            
+            List<Order> orders = orderRepository.findByUserUserId(userid);
+            return ResponseEntity.ok(ApiResponse.success("Commandes trouvées pour l'utilisateur: " + userid, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par Utilisateur", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur"));
+
         }
     }
 
     @GetMapping("/creationdateafter/{limit}")
-    public ResponseEntity<ApiResponse<List<Order>>> findByCreationDateAfter(@PathVariable Date limit) {
+    public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersCreatedAfter(@PathVariable Date limit) {
         try {
-            List<Order> orders = orderRepository.findByCreationDateAfter(limit);
-            return ResponseEntity.ok(ApiResponse.success("Commandes créé après la date: " + limit, orders));
+
+            Users currentUser = contextUtil.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
+            }
+            
+            List<Order> orders;
+            if (contextUtil.isAdmin()) {
+                orders = orderRepository.findByCreationDateAfter(limit);
+            } else {
+                orders = orderRepository.findByUserUserIdAndCreationDateAfter(currentUser.getUserId(), limit);
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("Commandes créées après la date: " + limit, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de creation", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de création"));
         }
     }
 
     @GetMapping("/tripstartdateafter/{limit}")
-    public ResponseEntity<ApiResponse<List<Order>>> findByTripStartDateAfter(@PathVariable Date limit) {
+    public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersWithTripStartAfter(@PathVariable Date limit) {
         try {
-            List<Order> orders = orderRepository.findByTripStartDateAfter(limit);
-            return ResponseEntity.ok(ApiResponse.success("Commandes de voyages commencant après la date: " + limit, orders));
+
+            Users currentUser = contextUtil.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
+            }   
+
+            List<Order> orders;
+            if (contextUtil.isAdmin()) {
+                orders = orderRepository.findByTripStartDateAfter(limit);
+            } else {
+                orders = orderRepository.findByUserUserIdAndTripStartDateAfter(currentUser.getUserId(), limit);
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("Commandes de voyages commençant après la date: " + limit, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de début de voyage", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de début de voyage"));
         }
     }
 }

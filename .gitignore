@@ -75,6 +75,7 @@ mvnw.cmd
 # VS Code Configuration Files
 .vscode/
 *.code-workspace
+.vscode/settings.json
 
 # Spring Boot Configuration Files (contain sensitive data)
 src/main/resources/application.properties

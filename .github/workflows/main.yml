@@ -165,6 +165,7 @@ jobs:
           "${{ secrets.MAIL_USER || 'your.email@gmail.com' }}" \
           "${{ secrets.MAIL_PASSWORD || 'your_app_password' }}" \
           "${{ secrets.REDIS_HOST || 'localhost' }}" \
+          "${{ secrets.REDIS_PASSWORD || 'rootroot' }}" \
           "${S3_BUCKET_TEMP}" \
           "${{ secrets.AWS_REGION }}" \
           "${{ env.APP_VERSION }}"

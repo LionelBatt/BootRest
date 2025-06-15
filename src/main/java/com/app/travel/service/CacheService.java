@@ -1,24 +1,28 @@
 package com.app.travel.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
 import com.app.travel.repos.TripRepository;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service de cache pour les statistiques et métriques de l'application
- * Utilise Redis ElastiCache pour améliorer les performances
+ * Utilise Redis conteneur local pour améliorer les performances
+ * Migration d'AWS ElastiCache vers conteneur local pour optimisation des coûts
  */
 @Service
 public class CacheService {
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final TripRepository tripRepository;
 
-    @Autowired
-    private TripRepository tripRepository;
+    public CacheService(RedisTemplate<String, Object> redisTemplate, TripRepository tripRepository) {
+        this.redisTemplate = redisTemplate;
+        this.tripRepository = tripRepository;
+    }
 
     /**
      * Compte total des voyages avec cache Redis
@@ -66,11 +70,13 @@ public class CacheService {
     }
 
     /**
-     * Obtient des informations sur le cache Redis
+     * Obtient des informations sur le cache Redis conteneur
      */
     public String getCacheInfo() {
         try {
-            return redisTemplate.getConnectionFactory().getConnection().info().toString();
+            // Test simple de ping pour vérifier la connexion
+            String ping = redisTemplate.getConnectionFactory().getConnection().ping();
+            return "Redis Container Status: " + (ping != null ? "Connected" : "Disconnected");
         } catch (Exception e) {
             return "Cache information unavailable: " + e.getMessage();
         }

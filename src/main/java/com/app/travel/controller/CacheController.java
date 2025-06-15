@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,12 +23,15 @@ import com.app.travel.dto.ApiResponse;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class CacheController {
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    //Test de connexion ElastiCache
+    public CacheController(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    //Test de connexion Redis conteneur local
     @GetMapping("/health")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> checkElastiCacheHealth() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkRedisContainerHealth() {
         Map<String, Object> healthInfo = new HashMap<>();
         
         try {
@@ -40,16 +42,17 @@ public class CacheController {
             
             // Test lecture/écriture
             String testKey = "health-check:" + System.currentTimeMillis();
-            String testValue = "ElastiCache OK";
+            String testValue = "Redis Container OK";
             
             redisTemplate.opsForValue().set(testKey, testValue, Duration.ofSeconds(10));
             String retrievedValue = (String) redisTemplate.opsForValue().get(testKey);
             redisTemplate.delete(testKey);
             
             healthInfo.put("readWrite", testValue.equals(retrievedValue));
+            healthInfo.put("containerType", "Local Redis Container");
             healthInfo.put("timestamp", System.currentTimeMillis());
             
-            return ResponseEntity.ok(ApiResponse.success("ElastiCache opérationnel", healthInfo));
+            return ResponseEntity.ok(ApiResponse.success("Redis conteneur opérationnel", healthInfo));
             
         } catch (Exception e) {
             healthInfo.put("connected", false);
@@ -57,13 +60,13 @@ public class CacheController {
             healthInfo.put("timestamp", System.currentTimeMillis());
             
             return ResponseEntity.status(503)
-                    .body(ApiResponse.error("ElastiCache non accessible"));
+                    .body(ApiResponse.error("Redis conteneur non accessible"));
         }
     }
 
-    // Statistiques détaillées ElastiCache
+    // Statistiques détaillées Redis conteneur
     @GetMapping("/stats")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getElastiCacheStats() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getRedisContainerStats() {
         Map<String, Object> stats = new HashMap<>();
         
         try {
@@ -78,17 +81,17 @@ public class CacheController {
             // Statistiques globales
             Set<String> allKeys = redisTemplate.keys("travel-agency:*");
             stats.put("totalCachedKeys", allKeys != null ? allKeys.size() : 0);
-            stats.put("elastiCacheHealthy", true);
+            stats.put("redisContainerHealthy", true);
             stats.put("timestamp", System.currentTimeMillis());
             
-            return ResponseEntity.ok(ApiResponse.success("Statistiques ElastiCache", stats));
+            return ResponseEntity.ok(ApiResponse.success("Statistiques Redis conteneur", stats));
             
         } catch (Exception e) {
             stats.put("error", e.getMessage());
-            stats.put("elastiCacheHealthy", false);
+            stats.put("redisContainerHealthy", false);
             
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error("Erreur statistiques ElastiCache"));
+                    .body(ApiResponse.error("Erreur statistiques Redis conteneur"));
         }
     }
 
@@ -157,7 +160,7 @@ public class CacheController {
         }
     }
 
-    //Test de performance ElastiCache
+    //Test de performance Redis conteneur local
     @PostMapping("/performance-test")
     public ResponseEntity<ApiResponse<Map<String, Object>>> performanceTest(
             @RequestParam(defaultValue = "100") int operations) {
@@ -200,9 +203,10 @@ public class CacheController {
             perfResults.put("avgWriteMs", (double) writeTime / operations);
             perfResults.put("avgReadMs", (double) readTime / operations);
             perfResults.put("operationsPerSecond", (double) (operations * 2) / (totalTime / 1000.0));
+            perfResults.put("containerLatency", "Local (no network latency)");
             
             return ResponseEntity.ok(ApiResponse.success(
-                "⚡ Test de performance ElastiCache terminé", perfResults));
+                "⚡ Test de performance Redis conteneur terminé", perfResults));
             
         } catch (Exception e) {
             perfResults.put("error", e.getMessage());

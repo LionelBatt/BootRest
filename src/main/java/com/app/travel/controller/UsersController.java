@@ -12,10 +12,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,7 @@ import com.app.travel.model.Users;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
+import com.app.travel.security.JwtUtil.LoginRequest;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class UsersController {
 
     @Autowired
-	UserRepository repos;
+    UserRepository repos;
 
     @Autowired
     TokenBlacklistService tokenBlacklistService;
@@ -43,17 +46,42 @@ public class UsersController {
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Users>> findUserInformation(@PathVariable int id){
+    public ResponseEntity<ApiResponse<Users>> findUserInformation(@PathVariable int id) {
         try {
             Users user = repos.findById(id).orElse(null);
-            if(user != null){
+            if (user != null) {
                 return ResponseEntity.ok(ApiResponse.success(true, user));
             }
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error("Erreur lors de la récupération des informations utilisateur", e.getMessage()));
+            return ResponseEntity.ok(
+                    ApiResponse.error("Erreur lors de la récupération des informations utilisateur", e.getMessage()));
         }
         return ResponseEntity.ok(ApiResponse.error("Aucun utilisateur trouvé avec l'id: " + id));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Users>> findUserLogPwd(@RequestBody LoginRequest loginRequest) {
+        try {
+            Users user = repos.findByUsername(loginRequest.getUsername()).orElse(null);
+            if (user != null) {
+                if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                    return ResponseEntity.ok(ApiResponse.error("Mot de passe incorrect."));
+                }
+
+                String token = jwtUtil.generateToken(user.getUsername());
+
+                return ResponseEntity.ok(ApiResponse.success(true, user, token));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.ok(
+                    ApiResponse.error("Erreur lors de la récupération des informations utilisateur", e.getMessage()));
+        }
+        return ResponseEntity.ok(ApiResponse.error("Aucun utilisateur trouvé avec ces identifiants!"));
     }
 
     @PutMapping("")
@@ -63,7 +91,8 @@ public class UsersController {
             Users updatedUser = repos.save(user);
             return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la mise à jour des informations", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la mise à jour des informations", e.getMessage()));
         }
     }
 
@@ -74,31 +103,35 @@ public class UsersController {
             // Récupérer l'utilisateur connecté
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             UserDetails currentUser = (UserDetails) auth.getPrincipal();
-            
+
             // Récupérer l'utilisateur à supprimer
             Users userToDelete = repos.findById(id).orElse(null);
             if (userToDelete == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Utilisateur non trouvé"));
             }
-            
+
             // Vérifier si l'utilisateur supprime son propre compte
             boolean isSelfDeletion = userToDelete.getUsername().equals(currentUser.getUsername());
             String token = jwtUtil.extractTokenFromRequest(request);
             if (token != null) {
-                // Si c'est une suppression de compte par l'utilisateur lui-même, ajouter le token à la liste noire
+                // Si c'est une suppression de compte par l'utilisateur lui-même, ajouter le
+                // token à la liste noire
                 if (isSelfDeletion) {
                     tokenBlacklistService.blacklistToken(token);
                 }
             }
             repos.deleteById(id);
 
-            String message = isSelfDeletion ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté." : "Utilisateur supprimé avec succès";
-                
+            String message = isSelfDeletion
+                    ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté."
+                    : "Utilisateur supprimé avec succès";
+
             return ResponseEntity.ok(ApiResponse.success(message));
-            
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
         }
     }
-    
+
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.app.travel.model.Users;
 import com.app.travel.service.TokenBlacklistService;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -23,25 +24,28 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class JwtUtil {
-	
+
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
-    
+
     @Value("${jwt.secret}")
     private String jwtSecret;
-    
+
     @Value("${jwt.expiration}")
     private int jwtExpirationMs;
 
     @Autowired
     private TokenBlacklistService tokenBlacklistService;
-    
+
     private SecretKey key;
-    // Initializes the key after the class is instantiated and the jwtSecret is injected, 
+
+    // Initializes the key after the class is instantiated and the jwtSecret is
+    // injected,
     // preventing the repeated creation of the key and enhancing performance
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
+
     // Generate JWT token
     public String generateToken(String username) {
         return Jwts.builder()
@@ -50,7 +54,8 @@ public class JwtUtil {
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key)
                 .compact();
-        }
+    }
+
     // Get username from JWT token
     public String getUsernameFromToken(String token) {
         return Jwts.parser()
@@ -60,6 +65,7 @@ public class JwtUtil {
                 .getPayload()
                 .getSubject();
     }
+
     // Validate JWT token
     public boolean validateJwtToken(String token) {
         try {
@@ -67,7 +73,7 @@ public class JwtUtil {
             if (tokenBlacklistService.isBlacklisted(token)) {
                 logger.error("JWT token is blacklisted: {}", token);
                 return false;
-            }        
+            }
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
         } catch (SecurityException e) {
@@ -85,10 +91,36 @@ public class JwtUtil {
     }
 
     public String extractTokenFromRequest(HttpServletRequest request) {
-    String headerAuth = request.getHeader("Authorization");
-    if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-        return headerAuth.substring(7); // Enlever "Bearer "
+        String headerAuth = request.getHeader("Authorization");
+        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7); // Enlever "Bearer "
+        }
+        return null;
     }
-    return null;
+
+    public class LoginRequest {
+        private String username;
+        private String password;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public LoginRequest() {
+        }
+
     }
+    
 }

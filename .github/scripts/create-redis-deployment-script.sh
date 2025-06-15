@@ -114,7 +114,6 @@ echo "🚀 Démarrage du container Redis..."
 sudo docker run -d \
   --name $REDIS_CONTAINER_NAME \
   --restart unless-stopped \
-  --network travel-network \
   -p $REDIS_PORT:6379 \
   -v $REDIS_CONFIG_DIR/redis.conf:/usr/local/etc/redis/redis.conf:ro \
   -v $REDIS_DATA_DIR:/data \

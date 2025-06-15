@@ -165,8 +165,7 @@ echo "🚀 Démarrage du conteneur..."
 docker run -d \
     --name "$CONTAINER_NAME" \
     --restart unless-stopped \
-    --network travel-network \
-    _-p 8080:8080 \
+    -p 8080:8080 \
     -v "$LOGS_DIR:/app/logs:rw" \
     -v "$DATA_DIR:/app/data:rw" \
     -e "DB_URL=$DB_URL" \

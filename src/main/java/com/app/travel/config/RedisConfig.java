@@ -10,10 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
@@ -24,76 +23,60 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-    @Value("${spring.redis.host}")
+    // ✅ CORRECTION - Utiliser les bonnes propriétés Spring Data Redis
+    @Value("${spring.data.redis.host:localhost}")
     private String redisHost;
 
-    @Value("${spring.redis.port}")
+    @Value("${spring.data.redis.port:6379}")
     private int redisPort;
 
-    @Value("${spring.redis.password:}")
+    @Value("${spring.data.redis.password:}")
     private String redisPassword;
 
-        /**
-         * Configuration de la connexion Redis
-         * Utilisation de LettuceConnectionFactory pour performance et compatibilité
-         */
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(redisHost);
-        redisConfig.setPort(redisPort);
-        
-        // Mot de passe optionnel pour conteneur local
-        if (redisPassword != null && !redisPassword.trim().isEmpty()) {
-            redisConfig.setPassword(redisPassword);
-        }
+    @Value("${spring.cache.redis.time-to-live:300000}")
+    private long defaultTtl;
 
-        return new LettuceConnectionFactory(redisConfig);
-    }
-
-    /**
-     * Template Redis avec sérialisation JSON
-     * Optimisé pour objets complexes (Trip, Users, Option)
-     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         
-        // Sérialisation des clés en String
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-        
-        // Sérialisation des valeurs en JSON
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
         
+        template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
+        
         return template;
     }
 
-    /**
-     * Cache Manager avec TTL configurables
-     * Stratégies de cache pour différents types de données
-     */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(1)) // TTL par défaut: 1 heure
-                .serializeKeysWith(org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMillis(defaultTtl))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                .disableCachingNullValues();
 
         return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(defaultConfig)
-                // Cache spécialisés avec TTL différents
-                .withCacheConfiguration("trips", defaultConfig.entryTtl(Duration.ofMinutes(30)))
-                .withCacheConfiguration("users", defaultConfig.entryTtl(Duration.ofHours(2)))
-                .withCacheConfiguration("options", defaultConfig.entryTtl(Duration.ofMinutes(15)))
-                .withCacheConfiguration("bookmarks", defaultConfig.entryTtl(Duration.ofHours(6)))
-                .withCacheConfiguration("search_results", defaultConfig.entryTtl(Duration.ofMinutes(10)))
+                .cacheDefaults(config)
+                .withCacheConfiguration("trips", config.entryTtl(Duration.ofMinutes(3)))
+                .withCacheConfiguration("trip-details", config.entryTtl(Duration.ofMinutes(3)))
+                .withCacheConfiguration("trip-search", config.entryTtl(Duration.ofMinutes(1)))
+                .withCacheConfiguration("destinations", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("orders", config.entryTtl(Duration.ofMinutes(2)))
+                .withCacheConfiguration("stats", config.entryTtl(Duration.ofMinutes(1)))
+                .withCacheConfiguration("options", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("option-details", config.entryTtl(Duration.ofMinutes(3)))
+                .withCacheConfiguration("options-by-category", config.entryTtl(Duration.ofMinutes(3)))
+                .withCacheConfiguration("options-by-price", config.entryTtl(Duration.ofMinutes(3)))
                 .build();
     }
 }

@@ -58,7 +58,7 @@ public class Trip implements Serializable {
     @JsonIgnore
     private Collection<Users> lovers;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
     private Collection<Option> packageOptions;
 

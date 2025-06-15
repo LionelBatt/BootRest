@@ -11,9 +11,10 @@ MAIL_HOST_VALUE="$5"
 MAIL_USER_VALUE="$6"
 MAIL_PASSWORD_VALUE="$7"
 REDIS_HOST_VALUE="$8"
-S3_BUCKET_TEMP="$9"
-AWS_REGION="${10}"
-APP_VERSION="${11}"
+REDIS_PASSWORD_VALUE="$9"
+S3_BUCKET_TEMP="${10}"
+AWS_REGION="${11}"
+APP_VERSION="${12}"
 
 echo "🔧 Création du script de déploiement avec les secrets..."
 
@@ -33,7 +34,7 @@ AWS_REGION="PLACEHOLDER_AWS_REGION"
 JAR_FILE="travel-agency-PLACEHOLDER_APP_VERSION.jar"
 ENV_FILE="/opt/travel-agency/.env"
 
-echo "🚀 Début du déploiement Travel Agency..."
+echo "🚀 Début du déploiement..."
 
 # Créer le fichier .env avec des variables GitHub Secrets
 echo "🔐 Création du fichier .env avec des variables sécurisées..."
@@ -51,6 +52,7 @@ MAIL_PORT=587
 MAIL_USER=PLACEHOLDER_MAIL_USER
 MAIL_PASSWORD=PLACEHOLDER_MAIL_PASSWORD
 REDIS_HOST=PLACEHOLDER_REDIS_HOST
+REDIS_PASSWORD=PLACEHOLDER_REDIS_PASSWORD
 ENV_CONTENT
 
 chmod 600 "$ENV_FILE"
@@ -176,6 +178,7 @@ docker run -d \
     -e "MAIL_USER=$MAIL_USER" \
     -e "MAIL_PASSWORD=$MAIL_PASSWORD" \
     -e "REDIS_HOST=$REDIS_HOST" \
+    -e "REDIS_PASSWORD=$REDIS_PASSWORD" \
     -e "REDIS_PORT=6379" \
     -e "SERVER_PORT=8080" \
     -e "LOGGING_LEVEL_ROOT=INFO" \
@@ -203,7 +206,7 @@ docker logs "$CONTAINER_NAME" 2>&1
 if docker ps | grep "$CONTAINER_NAME" > /dev/null; then
     echo "✅ Conteneur en cours d'exécution"
     PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "N/A")
-    echo "🌐 Application disponible sur : http://$PUBLIC_IP:8080/travel"
+    echo "🌐 Application disponible sur : http://YourEc2Ip:8080/travel"
 else
     echo "❌ Conteneur ne fonctionne pas correctement"
     docker logs "$CONTAINER_NAME" 2>&1
@@ -213,7 +216,7 @@ fi
 echo "🎉 Déploiement terminé !"
 EOF
 
-# Remplacer les placeholders avec les vraies valeurs
+
 sed -i "s|PLACEHOLDER_DB_URL|$DB_URL_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_DB_USER|$DB_USER_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_DB_PASSWORD|$DB_PASSWORD_VALUE|g" deploy_embedded.sh
@@ -222,6 +225,7 @@ sed -i "s|PLACEHOLDER_MAIL_HOST|$MAIL_HOST_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_MAIL_USER|$MAIL_USER_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_MAIL_PASSWORD|$MAIL_PASSWORD_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_REDIS_HOST|$REDIS_HOST_VALUE|g" deploy_embedded.sh
+sed -i "s|PLACEHOLDER_REDIS_PASSWORD|$REDIS_PASSWORD_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_S3_BUCKET|$S3_BUCKET_TEMP|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_AWS_REGION|$AWS_REGION|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_APP_VERSION|$APP_VERSION|g" deploy_embedded.sh

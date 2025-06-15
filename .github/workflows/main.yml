@@ -96,10 +96,49 @@ jobs:
         path: target/travel-agency-${{ env.APP_VERSION }}.jar
         retention-days: 30
 
-  deploy:
+  deploy-redis:
     runs-on: ubuntu-latest
     needs: build
-    name: Déploiement sur EC2
+    name: Déploiement Redis Container
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Configuration des credentials AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: 🔑 Configuration de la clé SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $(aws ec2 describe-instances --instance-ids ${{ env.EC2_INSTANCE_ID }} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text) >> ~/.ssh/known_hosts
+
+    - name: 📝 Création du script de déploiement Redis
+      run: |
+        chmod +x .github/scripts/create-redis-deployment-script.sh
+        ./.github/scripts/create-redis-deployment-script.sh \
+          "${{ secrets.REDIS_PASSWORD || 'rootroot' }}"
+
+    - name: 🐳 Déploiement Redis sur EC2
+      run: |
+        EC2_IP=$(aws ec2 describe-instances \
+          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+          --query 'Reservations[0].Instances[0].PublicIpAddress' \
+          --output text)
+        chmod +x .github/scripts/deploy-redis-to-ec2.sh
+        ./.github/scripts/deploy-redis-to-ec2.sh "$EC2_IP"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, deploy-redis]
+    name: Déploiement Application sur EC2
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
@@ -165,6 +204,7 @@ jobs:
           "${{ secrets.MAIL_USER || 'your.email@gmail.com' }}" \
           "${{ secrets.MAIL_PASSWORD || 'your_app_password' }}" \
           "${{ secrets.REDIS_HOST || 'localhost' }}" \
+          "${{ secrets.REDIS_PASSWORD || 'rootroot' }}" \
           "${S3_BUCKET_TEMP}" \
           "${{ secrets.AWS_REGION }}" \
           "${{ env.APP_VERSION }}"

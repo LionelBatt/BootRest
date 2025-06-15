@@ -1,0 +1,18 @@
+FROM redis:7.2-alpine
+
+#Copier la configuration Redis
+COPY redis.conf /usr/local/etc/redis/redis.conf
+
+#Créer le répertoire pour les données
+RUN mkdir -p /data
+
+#Exposition du port
+EXPOSE 6379
+
+#Healthcheck avec authentification
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD redis-cli -a your_secure_password_here ping || exit 1
+
+#Démarrer Redis avec la configuration personnalisée
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
+

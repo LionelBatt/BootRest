@@ -97,12 +97,12 @@ public class WebSecurityConfig {
                 // Options - Public en lecture, sécurisé en écriture
                 .requestMatchers(HttpMethod.GET, "/options").permitAll()
                 .requestMatchers(HttpMethod.GET, "/options/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/options/categories/**").permitAll()
+
 
                 // Cache - Seulement pour les admins
                 //.requestMatchers("/cache/**").hasRole("ADMIN")
 
-                //Tous les autres endpoints nécessitent une authentification au pour etre plus explicite
+                //Tous les autres endpoints nécessitent une authentification ou pour etre plus explicite
                 .requestMatchers("/travel/**").authenticated()
 
                 //Tous les autres requêtes nécessitent une authentification

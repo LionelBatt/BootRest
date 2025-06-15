@@ -22,6 +22,7 @@ import com.app.travel.model.Continent;
 import com.app.travel.model.Country;
 import com.app.travel.model.Trip;
 import com.app.travel.repos.TripRepository;
+import com.app.travel.service.TripService;
 import com.app.travel.utils.ContextUtil;
 
 @CrossOrigin
@@ -33,13 +34,15 @@ public class TripController {
     private TripRepository tripRepository;
 
     @Autowired
+    private TripService tripService;
+
+    @Autowired
     private ContextUtil contextUtil;
 
     @GetMapping("")
-    //@Cacheable(value = "trips", key = "'all'") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findAll() {
         try {
-            List<Trip> trips = tripRepository.findAll();
+            List<Trip> trips = tripService.getAllTrips();
             return ResponseEntity.ok(ApiResponse.success("Voyages:", trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -48,12 +51,6 @@ public class TripController {
     }
 
     @PostMapping("")
-    // Desactiver en Dev
-    // @Caching(evict = {
-    //     @CacheEvict(value = "trips", allEntries = true),
-    //     @CacheEvict(value = "trip-search", allEntries = true),
-    //     @CacheEvict(value = "destinations", allEntries = true)
-    // }) 
     public ResponseEntity<ApiResponse<Trip>> create(@RequestBody Trip trip) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -70,13 +67,6 @@ public class TripController {
     }
 
     @PutMapping("/{id}")
-    // Desactiver en Dev
-    // @Caching(evict = {
-    //     @CacheEvict(value = "trips", allEntries = true),
-    //     @CacheEvict(value = "trip-details", key = "#id"),
-    //     @CacheEvict(value = "trip-search", allEntries = true),
-    //     @CacheEvict(value = "destinations", allEntries = true)
-    // })
     public ResponseEntity<ApiResponse<Trip>> update(@PathVariable int id, @RequestBody Trip trip) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -100,10 +90,9 @@ public class TripController {
     }
 
     @GetMapping("/{id}")
-    //@Cacheable(value = "trip-details", key = "#id") Desactiver en Dev
     public ResponseEntity<ApiResponse<Trip>> findById(@PathVariable int id) {
         try {
-            Optional<Trip> trip = tripRepository.findById(id);
+            Optional<Trip> trip = tripService.getTripById(id);
             if (trip.isPresent()) {
                 return ResponseEntity.ok(ApiResponse.success("Voyage:", trip.get()));
             } else {
@@ -117,13 +106,6 @@ public class TripController {
     }
 
     @DeleteMapping("/{id}")
-    // Desactiver en Dev
-    // @Caching(evict = {
-    //     @CacheEvict(value = "trips", allEntries = true),
-    //     @CacheEvict(value = "trip-details", key = "#id"),
-    //     @CacheEvict(value = "trip-search", allEntries = true),
-    //     @CacheEvict(value = "destinations", allEntries = true)
-    // })
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable int id) {
         try {
             if (!contextUtil.isAdmin()) {
@@ -144,11 +126,10 @@ public class TripController {
     }
 
     @GetMapping("/continent/{destination}")
-    //@Cacheable(value = "destinations", key = "'continent:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationContinent(@PathVariable String destination) {
         try {
             Continent destinationEnum = Continent.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestinationContinent(destinationEnum);
+            List<Trip> trips = tripService.getTripsByContinent(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme continent de destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -160,11 +141,10 @@ public class TripController {
     }
 
     @GetMapping("/city/{destination}")
-    //@Cacheable(value = "destinations", key = "'city:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationCity(@PathVariable String destination) {
         try {
             City destinationEnum = City.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestinationCity(destinationEnum);
+            List<Trip> trips = tripService.getTripsByCity(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour la Ville: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -176,11 +156,10 @@ public class TripController {
     }
 
     @GetMapping("/country/{destination}")
-    //@Cacheable(value = "destinations", key = "'country:' + #destination") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByDestinationCountry(@PathVariable String destination) {
         try {
             Country destinationEnum = Country.valueOf(destination.toUpperCase());
-            List<Trip> trips = tripRepository.findByDestinationCountry(destinationEnum);
+            List<Trip> trips = tripService.getTripsByCountry(destinationEnum);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés avec comme pays de destination: " + destination, trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -192,14 +171,13 @@ public class TripController {
     }
 
     @GetMapping("/user/{userId}")
-    //@Cacheable(value = "destinations", key = "'user:' + #userId") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByUserId(@PathVariable Integer userId) {
         try {
             if (!contextUtil.canAccessUser(userId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
-            List<Trip> trips = tripRepository.findByUser_UserId(userId);
+            List<Trip> trips = tripService.getTripsByUser(userId);
             return ResponseEntity.ok(ApiResponse.success("Voyages de l'utilisateur: " + userId, trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -221,12 +199,10 @@ public class TripController {
      * @param prixmin (default: 0)
      * @param prixmax (default: 9999999)
      * @return List<Trip> of Trip matching research filter
-     */ 
-    // @Cacheable Desactiver en Dev
+     */
     @GetMapping("/search/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
-    //@Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #option1id + ':' + #option2id + ':' + #option3id + ':' + #prixmin + ':' + #prixmax")
-    public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity,
-    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin,
+    public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
+    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
     @PathVariable int prixmax) {
         try {
             Continent destinationCont = destinationContinent.equalsIgnoreCase("null")? null: Continent.valueOf(destinationContinent.toUpperCase());
@@ -235,7 +211,7 @@ public class TripController {
             Integer opt1 = (option1id == 0)? null: option1id;
             Integer opt2 = (option2id == 0)? null: option2id;
             Integer opt3 = (option3id == 0)? null: option3id;
-            List<Trip> trips = tripRepository.findByDestinationCityWithOptions(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, opt1, opt2, opt3, prixmin, prixmax);
+            List<Trip> trips = tripService.searchTripsWithFilter(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, opt1, opt2, opt3, prixmin, prixmax);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -247,10 +223,9 @@ public class TripController {
     }
 
     @GetMapping("/search/{character}")
-    //@Cacheable(value = "trip-search", key = "'character:' + #character") Desactiver en Dev
     public ResponseEntity<ApiResponse<List<Trip>>> findByCharacter(@PathVariable String character) {
         try {
-            List<Trip> trips = tripRepository.findByCharacter(character);
+            List<Trip> trips = tripService.searchTripsByCharacter(character);
             return ResponseEntity.ok(ApiResponse.success("Voyages trouvés contenant le caractère: " + character, trips));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

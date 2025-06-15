@@ -34,7 +34,7 @@ AWS_REGION="PLACEHOLDER_AWS_REGION"
 JAR_FILE="travel-agency-PLACEHOLDER_APP_VERSION.jar"
 ENV_FILE="/opt/travel-agency/.env"
 
-echo "🚀 Début du déploiement Travel Agency..."
+echo "🚀 Début du déploiement..."
 
 # Créer le fichier .env avec des variables GitHub Secrets
 echo "🔐 Création du fichier .env avec des variables sécurisées..."
@@ -165,7 +165,8 @@ echo "🚀 Démarrage du conteneur..."
 docker run -d \
     --name "$CONTAINER_NAME" \
     --restart unless-stopped \
-    --network host \
+    --network travel-network \
+    _-p 8080:8080 \
     -v "$LOGS_DIR:/app/logs:rw" \
     -v "$DATA_DIR:/app/data:rw" \
     -e "DB_URL=$DB_URL" \
@@ -206,7 +207,7 @@ docker logs "$CONTAINER_NAME" 2>&1
 if docker ps | grep "$CONTAINER_NAME" > /dev/null; then
     echo "✅ Conteneur en cours d'exécution"
     PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "N/A")
-    echo "🌐 Application disponible sur : http://$PUBLIC_IP:8080/travel"
+    echo "🌐 Application disponible sur : http://YourEc2Ip:8080/travel"
 else
     echo "❌ Conteneur ne fonctionne pas correctement"
     docker logs "$CONTAINER_NAME" 2>&1
@@ -216,7 +217,7 @@ fi
 echo "🎉 Déploiement terminé !"
 EOF
 
-# Remplacer les placeholders avec les vraies valeurs
+
 sed -i "s|PLACEHOLDER_DB_URL|$DB_URL_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_DB_USER|$DB_USER_VALUE|g" deploy_embedded.sh
 sed -i "s|PLACEHOLDER_DB_PASSWORD|$DB_PASSWORD_VALUE|g" deploy_embedded.sh

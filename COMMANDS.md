@@ -33,17 +33,17 @@ mvn test
 
 
 # Inscription
-curl -X POST http://localhost:8080/resto/api/auth/signup \
+curl -X POST http://localhost:8080/travel/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"username":"test","email":"test@test.com","password":"password123"}'
 
 # Connexion
-curl -X POST http://localhost:8080/resto/api/auth/login \
+curl -X POST http://localhost:8080/travel/auth/signin \
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","password":"password123"}'
 
 # Test avec token JWT
-curl -X GET http://localhost:8080/app/trips/ \
+curl -X GET http://localhost:8080/travel/user/profil \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -69,7 +69,3 @@ mvn dependency:purge-local-repository
 ```bash
 # Documentation Maven
 mvn site
-
-# Documentation JavaDoc
-mvn javadoc:javadoc
-```

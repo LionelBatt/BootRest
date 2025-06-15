@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.app.travel.model.Users;
 import com.app.travel.service.TokenBlacklistService;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -122,5 +121,5 @@ public class JwtUtil {
         }
 
     }
-    
+
 }

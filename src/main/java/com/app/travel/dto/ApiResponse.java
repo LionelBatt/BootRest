@@ -106,7 +106,7 @@ public class ApiResponse<T> {
         this.token = token;
     }
 
-    public LocalDateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 

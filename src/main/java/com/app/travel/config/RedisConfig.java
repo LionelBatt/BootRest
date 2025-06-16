@@ -23,7 +23,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-    // ✅ CORRECTION - Utiliser les bonnes propriétés Spring Data Redis
     @Value("${spring.data.redis.host:localhost}")
     private String redisHost;
 
@@ -33,7 +32,7 @@ public class RedisConfig {
     @Value("${spring.data.redis.password:}")
     private String redisPassword;
 
-    @Value("${spring.cache.redis.time-to-live:300000}")
+    @Value("${spring.cache.redis.time-to-live:100000}")
     private long defaultTtl;
 
     @Bean
@@ -67,16 +66,16 @@ public class RedisConfig {
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
-                .withCacheConfiguration("trips", config.entryTtl(Duration.ofMinutes(3)))
-                .withCacheConfiguration("trip-details", config.entryTtl(Duration.ofMinutes(3)))
-                .withCacheConfiguration("trip-search", config.entryTtl(Duration.ofMinutes(1)))
-                .withCacheConfiguration("destinations", config.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("orders", config.entryTtl(Duration.ofMinutes(2)))
-                .withCacheConfiguration("stats", config.entryTtl(Duration.ofMinutes(1)))
-                .withCacheConfiguration("options", config.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("option-details", config.entryTtl(Duration.ofMinutes(3)))
-                .withCacheConfiguration("options-by-category", config.entryTtl(Duration.ofMinutes(3)))
-                .withCacheConfiguration("options-by-price", config.entryTtl(Duration.ofMinutes(3)))
+                .withCacheConfiguration("trips", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("trip-details", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("trip-search", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("destinations", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("orders", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("stats", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("options", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("option-details", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("options-by-category", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("options-by-price", config.entryTtl(Duration.ofSeconds(30)))
                 .build();
     }
 }

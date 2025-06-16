@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +16,10 @@ import com.app.travel.model.Continent;
 import com.app.travel.model.Country;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/destination")
 public class DestinationController {
+
 
     @GetMapping("/continents")
     public List<Map<String, Object>> getContinents() {

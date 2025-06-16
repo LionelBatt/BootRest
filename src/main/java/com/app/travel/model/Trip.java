@@ -19,6 +19,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
 
 @Entity
@@ -32,6 +34,7 @@ public class Trip implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    // Correction: Noms des champs cohérents avec les getters/setters
     @Enumerated(EnumType.STRING)
     @Column(name = "destination_country")
     private Country destinationCountry;
@@ -81,6 +84,8 @@ public class Trip implements Serializable {
         this.unitPrice = unitPrice;
     }
 
+    // === GETTERS ET SETTERS CORRIGÉS ===
+    
     public int getId() {
         return id;
     }
@@ -169,11 +174,91 @@ public class Trip implements Serializable {
         this.version = version;
     }
 
+    // === MÉTHODES UTILITAIRES ===
+    
+    /**
+     * Vérifie si le voyage a des commandes
+     */
+    public boolean hasOrders() {
+        return orders != null && !orders.isEmpty();
+    }
+    
+    /**
+     * Vérifie si le voyage est dans les favoris
+     */
+    public boolean hasFavorites() {
+        return lovers != null && !lovers.isEmpty();
+    }
+    
+    /**
+     * Obtient le nombre de commandes
+     */
+    public int getOrderCount() {
+        return orders != null ? orders.size() : 0;
+    }
+    
+    /**
+     * Obtient le nombre de favoris
+     */
+    public int getFavoriteCount() {
+        return lovers != null ? lovers.size() : 0;
+    }
+    
+    /**
+     * Obtient le nombre d'options
+     */
+    public int getOptionCount() {
+        return packageOptions != null ? packageOptions.size() : 0;
+    }
+
+    // === MÉTHODES D'AFFICHAGE ===
+    
+    /**
+     * Retourne une représentation textuelle de la destination complète
+     */
+    public String getFullDestination() {
+        return String.format("%s, %s, %s", 
+            destinationCity != null ? destinationCity.name() : "N/A",
+            destinationCountry != null ? destinationCountry.name() : "N/A",
+            destinationContinent != null ? destinationContinent.name() : "N/A"
+        );
+    }
+    
+    /**
+     * Retourne une représentation formatée du prix
+     */
+    public String getFormattedPrice() {
+        return String.format("%d€", unitPrice);
+    }
+
     @Override
     public String toString() {
-        return "Trip [id=" + id + ", destinationCountry=" + destinationCountry + ", destinationContinent="
-                + destinationContinent + ", destinationCity=" + destinationCity + ", minimumDuration="
-                + minimumDuration + ", description=" + description + ", packageOptions=" + packageOptions
-                + ", unitPrice=" + unitPrice + "]";
+        return "Trip [" +
+                "id=" + id +
+                ", destinationCountry=" + destinationCountry +
+                ", destinationContinent=" + destinationContinent +
+                ", destinationCity=" + destinationCity +
+                ", minimumDuration=" + minimumDuration +
+                ", description='" + description + '\'' +
+                ", unitPrice=" + unitPrice +
+                ", orderCount=" + getOrderCount() +
+                ", favoriteCount=" + getFavoriteCount() +
+                ", optionCount=" + getOptionCount() +
+                ']';
+    }
+
+    // === MÉTHODES EQUALS ET HASHCODE ===
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Trip trip = (Trip) obj;
+        return id == trip.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
     }
 }

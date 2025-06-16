@@ -20,6 +20,7 @@ import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
 import com.app.travel.utils.ContextUtil;
+// import com.app.travel.security.JwtUtil.LoginRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -29,10 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class UsersController {
 
     @Autowired
-	private UserRepository repos;
-
-    @Autowired
-    private TokenBlacklistService tokenBlacklistService;
+    UserRepository repos;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -40,8 +38,14 @@ public class UsersController {
     @Autowired
     private ContextUtil contextUtil;
 
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
+    // @Autowired
+    // private PasswordEncoder passwordEncoder;
+
     @GetMapping("")
-    public ResponseEntity<ApiResponse<List<Users>>> getAllUsers(){
+    public ResponseEntity<ApiResponse<List<Users>>> getAllUsers() {
         try {
             if (contextUtil.isAdmin()) {
                 List<Users> users = repos.findAll();
@@ -50,10 +54,12 @@ public class UsersController {
                 }
                 return ResponseEntity.ok(ApiResponse.success("Liste des utilisateurs", users));
             } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Cette ressource n'est pas accessible"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la récupération des utilisateurs"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération des utilisateurs"));
         }
     }
 
@@ -69,7 +75,7 @@ public class UsersController {
             if (!contextUtil.canAccessUser(user)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));
-            }         
+            }
             return ResponseEntity.ok(ApiResponse.success("Utilisateur trouvé", user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -79,14 +85,14 @@ public class UsersController {
 
     @GetMapping("/profil")
     public ResponseEntity<ApiResponse<Users>> getCurrentUser() {
-        try {       
+        try {
             Users user = contextUtil.getCurrentUser();
             if (user != null) {
                 return ResponseEntity.ok(ApiResponse.success("Profil:", user));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Profil non trouvé"));
-            }            
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la récupération du profil"));
@@ -101,12 +107,12 @@ public class UsersController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Utilisateur non trouvé avec l'ID: " + id));
             }
-            
+
             if (!contextUtil.canAccessUser(existingUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
-            
+
             user.setUserId(id);
             Users updatedUser = repos.save(user);
             return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
@@ -116,46 +122,70 @@ public class UsersController {
         }
     }
 
-@DeleteMapping("/{id}")
-public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {
-    try {
-        Users userToDelete = repos.findById(id).orElse(null);
-        if (userToDelete == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Utilisateur non trouvé"));
-        }
-        
-        if (!contextUtil.canAccessUser(userToDelete)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("Cette ressource n'est pas accessible"));
-        }
-        
-        Users currentUser = contextUtil.getCurrentUser();
-        boolean isSelfDeletion = false;
-        
-        if (currentUser != null) {
-            isSelfDeletion = currentUser.getUserId() == userToDelete.getUserId();
-        }
-        
-        if (isSelfDeletion) {
-            String token = jwtUtil.extractTokenFromRequest(request);
-            if (token != null) {
-                tokenBlacklistService.blacklistToken(token);
-            }
-        }
-        
-        repos.deleteById(id);
+    // @PostMapping("/login")
+    // public ResponseEntity<ApiResponse<Users>> findUserLogPwd(@RequestBody LoginRequest loginRequest) {
+    //     try {
+    //         Users user = repos.findByUsername(loginRequest.getUsername()).orElse(null);
+    //         if (user == null) {
+    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                     .body(ApiResponse.error("Utilisateur non trouvé."));
+    //         }
 
-        String message = isSelfDeletion ? 
-            "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté." : 
-            "Utilisateur supprimé avec succès";
-            
-        return ResponseEntity.ok(ApiResponse.success(message));
-        
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
+    //         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                     .body(ApiResponse.error("Mot de passe incorrect."));
+    //         }
+
+    //         String token = jwtUtil.generateToken(user.getUsername());
+
+    //         return ResponseEntity.ok(ApiResponse.success(true, user, token));
+
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(ApiResponse.error("Erreur lors de l'authentification."));
+    //     }
+    // }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {
+        try {
+            Users userToDelete = repos.findById(id).orElse(null);
+            if (userToDelete == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
+            }
+
+            if (!contextUtil.canAccessUser(userToDelete)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+
+            Users currentUser = contextUtil.getCurrentUser();
+            boolean isSelfDeletion = false;
+
+            if (currentUser != null) {
+                isSelfDeletion = currentUser.getUserId() == userToDelete.getUserId();
+            }
+
+            if (isSelfDeletion) {
+                String token = jwtUtil.extractTokenFromRequest(request);
+                if (token != null) {
+                    tokenBlacklistService.blacklistToken(token);
+                }
+            }
+
+            repos.deleteById(id);
+
+            String message = isSelfDeletion
+                    ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté."
+                    : "Utilisateur supprimé avec succès";
+
+            return ResponseEntity.ok(ApiResponse.success(message));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
+        }
     }
-}
-    
+
 }

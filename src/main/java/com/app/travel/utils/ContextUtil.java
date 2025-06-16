@@ -37,7 +37,7 @@ public class ContextUtil {
     public Users getCurrentUser() {
         String username = getCurrentUsername();
         if (username != null) {
-            return userRepository.findByUsername(username);
+            return userRepository.findByUsername(username).orElse(null);
         }
         return null;
     }

@@ -1,8 +1,8 @@
 package com.app.travel.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,12 +246,12 @@ public class TripController {
             return ResponseEntity.ok(ApiResponse.success("Continents récupérés avec succès", continents));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des continents", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des continents"));
         }
     }
 
     /*** Endpoint pour récupérer les pays d'un continent donné   */
-    @GetMapping("/api/countries")
+    @GetMapping("countries")
     public ResponseEntity<ApiResponse<List<String>>> getCountriesByContinent(
             @RequestParam String continent) {
         try {
@@ -271,12 +271,12 @@ public class TripController {
                     .body(ApiResponse.error("Continent invalide: " + continent));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des pays", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des pays"));
         }
     }
 
     /** Endpoint pour récupérer les villes d'un pays donné*/
-    @GetMapping("/api/cities")
+    @GetMapping("/cities")
     public ResponseEntity<ApiResponse<List<String>>> getCitiesByCountry(
             @RequestParam String country) {
         try {
@@ -296,12 +296,11 @@ public class TripController {
                     .body(ApiResponse.error("Pays invalide: " + country));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des villes", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des villes"));
         }
     }
 
-    /*** Endpoint pour récupérer les voyages par localisation hiérarchique    */
-    @GetMapping("/api/trips-by-location")
+    @GetMapping("/trips-by-location")
     public ResponseEntity<ApiResponse<List<Trip>>> getTripsByLocation(
             @RequestParam(required = false) String continent,
             @RequestParam(required = false) String country,
@@ -349,19 +348,18 @@ public class TripController {
                     .body(ApiResponse.error("Paramètre de localisation invalide"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par localisation", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la recherche par localisation"));
         }
     }
 
-    /*** Endpoint pour obtenir les statistiques par continent */
-    @GetMapping("/api/stats/continents")
+    @GetMapping("stats/continents")
     public ResponseEntity<ApiResponse<Object>> getContinentStats() {
         try {
             List<Object[]> stats = tripRepository.countTripsByContinent();
             return ResponseEntity.ok(ApiResponse.success("Statistiques par continent récupérées", stats));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la récupération des statistiques", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la récupération des statistiques"));
         }
     }
 

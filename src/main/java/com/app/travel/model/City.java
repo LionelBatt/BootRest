@@ -2,47 +2,52 @@ package com.app.travel.model;
 
 public enum City {
     // EUROPE
-    PARIS(1),
-    ROME(2),
-    BARCELONA(3),
-    SANTORINI(4),
-    LISBON(5),
-    LONDON(6),
-    AMSTERDAM(7),
-    BERLIN(8),
-    
+    PARIS(110),         // France
+    LYON(111),          // France
+    MARSEILLE(112),     // France
+    STRASBOURG(113),    // France
+    LISBON(120),        // Portugal
+    ROME(130),          // Italie
+    BARCELONA(140),     // Espagne
+    MADRID(141),        // Espagne
+    VALENCE(142),       // Espagne
+    SANTORINI(150),     // Grèce
+    LONDON(160),        // Royaume-Uni
+    AMSTERDAM(170),     // Pays-Bas
+    BERLIN(180),        // Allemagne
+
     // ASIE
-    TOKYO(9),
-    BANGKOK(10),
-    DELHI(11),
-    BEIJING(12),
-    HANOI(13),
-    SEOUL(14),
-    SINGAPORE(15),
-    
+    TOKYO(210),         // Japon
+    BANGKOK(220),       // Thaïlande
+    DELHI(230),         // Inde
+    BEIJING(240),       // Chine
+    HANOI(250),         // Vietnam
+    SEOUL(260),         // Corée du Sud
+    SINGAPORE(270),     // Singapour
+
     // AMERIQUE_DU_NORD
-    NEW_YORK(16),
-    MONTREAL(17),
-    LOS_ANGELES(18),
-    VANCOUVER(19),
-    
+    NEW_YORK(310),      // USA
+    LOS_ANGELES(311),   // USA
+    MONTREAL(320),      // Canada
+    VANCOUVER(321),     // Canada
+
     // AMERIQUE_DU_SUD
-    RIO_DE_JANEIRO(20),
-    BUENOS_AIRES(21),
-    CUSCO(22),
-    SANTIAGO(23),
-    
+    RIO_DE_JANEIRO(410),// Brésil
+    BUENOS_AIRES(420),  // Argentine
+    CUSCO(430),         // Pérou
+    SANTIAGO(440),      // Chili
+
     // AFRIQUE
-    MARRAKECH(24),
-    CAIRO(25),
-    CAPE_TOWN(26),
-    NAIROBI(27),
-    TUNIS(28),
-    
+    MARRAKECH(510),     // Maroc
+    TUNIS(511),         // Tunisie
+    CAIRO(520),         // Égypte
+    NAIROBI(530),       // Kenya
+    CAPE_TOWN(540),     // Afrique du Sud
+
     // OCEANIE
-    SYDNEY(29),
-    AUCKLAND(30),
-    SUVA(31);
+    SYDNEY(610),        // Australie
+    AUCKLAND(620),      // Nouvelle-Zélande
+    SUVA(630);          // Fidji
     
     private final int id;
     

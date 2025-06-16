@@ -2,45 +2,45 @@ package com.app.travel.model;
 
 public enum Country {
     // EUROPE
-    FRANCE(1),
-    ITALY(2),
-    SPAIN(3),
-    GREECE(4),
-    PORTUGAL(5),
-    UNITED_KINGDOM(6),
-    NETHERLANDS(7),
-    GERMANY(8),
+    FRANCE(11),
+    ITALY(13),
+    SPAIN(14),
+    GREECE(15),
+    PORTUGAL(12),
+    UNITED_KINGDOM(16),
+    NETHERLANDS(17),
+    GERMANY(18),
     
     // ASIE
-    JAPAN(9),
-    THAILAND(10),
-    INDIA(11),
-    CHINA(12),
-    VIETNAM(13),
-    SOUTH_KOREA(14),
-    SINGAPORE(15),
+    JAPAN(21),
+    THAILAND(22),
+    INDIA(23),
+    CHINA(24),
+    VIETNAM(25),
+    SOUTH_KOREA(26),
+    SINGAPORE(27),
     
     // AMERIQUE_DU_NORD
-    USA(16),
-    CANADA(17),
+    USA(31),
+    CANADA(32),
     
     // AMERIQUE_DU_SUD
-    BRAZIL(18),
-    ARGENTINA(19),
-    PERU(20),
-    CHILE(21),
+    BRAZIL(41),
+    ARGENTINA(42),
+    PERU(43),
+    CHILE(44),
     
     // AFRIQUE
-    MOROCCO(22),
-    EGYPT(23),
-    SOUTH_AFRICA(24),
-    KENYA(25),
-    TUNISIA(26),
+    MOROCCO(51),
+    EGYPT(52),
+    SOUTH_AFRICA(53),
+    KENYA(54),
+    TUNISIA(55),
     
     // OCEANIE
-    AUSTRALIA(27),
-    NEW_ZEALAND(28),
-    FIJI(29);
+    AUSTRALIA(61),
+    NEW_ZEALAND(62),
+    FIJI(63);
     
     private final int id;
     

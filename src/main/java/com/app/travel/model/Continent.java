@@ -1,13 +1,12 @@
 package com.app.travel.model;
 
 public enum Continent {
-    AFRIQUE(1),
-    AMERIQUE_DU_NORD(2),
-    AMERIQUE_DU_SUD(3),
-    ANTARTIQUE(4),
-    ASIE(5),
-    EUROPE(6),
-    OCEANIE(7);
+    AFRIQUE(5),
+    AMERIQUE_DU_NORD(3),
+    AMERIQUE_DU_SUD(4),
+    ASIE(2),
+    EUROPE(1),
+    OCEANIE(6);
     
     private final int id;
     

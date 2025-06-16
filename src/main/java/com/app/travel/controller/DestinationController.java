@@ -41,7 +41,7 @@ public class DestinationController {
                 })
                 .collect(Collectors.toList());
     }
-
+ 
     @GetMapping("/cities")
     public List<Map<String, Object>> getCity() {
         return Arrays.stream(City.values())
@@ -54,3 +54,4 @@ public class DestinationController {
                 .collect(Collectors.toList());
     }
 }
+ 

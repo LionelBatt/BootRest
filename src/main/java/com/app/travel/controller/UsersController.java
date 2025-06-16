@@ -5,12 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +20,7 @@ import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
 import com.app.travel.utils.ContextUtil;
-import com.app.travel.security.JwtUtil.LoginRequest;
+// import com.app.travel.security.JwtUtil.LoginRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -43,8 +41,8 @@ public class UsersController {
     @Autowired
     private TokenBlacklistService tokenBlacklistService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // @Autowired
+    // private PasswordEncoder passwordEncoder;
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Users>>> getAllUsers() {
@@ -124,29 +122,29 @@ public class UsersController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Users>> findUserLogPwd(@RequestBody LoginRequest loginRequest) {
-        try {
-            Users user = repos.findByUsername(loginRequest.getUsername()).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Utilisateur non trouvé."));
-            }
+    // @PostMapping("/login")
+    // public ResponseEntity<ApiResponse<Users>> findUserLogPwd(@RequestBody LoginRequest loginRequest) {
+    //     try {
+    //         Users user = repos.findByUsername(loginRequest.getUsername()).orElse(null);
+    //         if (user == null) {
+    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                     .body(ApiResponse.error("Utilisateur non trouvé."));
+    //         }
 
-            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Mot de passe incorrect."));
-            }
+    //         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                     .body(ApiResponse.error("Mot de passe incorrect."));
+    //         }
 
-            String token = jwtUtil.generateToken(user.getUsername());
+    //         String token = jwtUtil.generateToken(user.getUsername());
 
-            return ResponseEntity.ok(ApiResponse.success(true, user, token));
+    //         return ResponseEntity.ok(ApiResponse.success(true, user, token));
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de l'authentification."));
-        }
-    }
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(ApiResponse.error("Erreur lors de l'authentification."));
+    //     }
+    // }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {

@@ -34,6 +34,10 @@ public class OrderController {
     @Autowired
     private ContextUtil contextUtil;
 
+    /**
+     * Endpoint pour récupérer toutes les commandes
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Order>>> getAllOrders() {
         try {
@@ -48,7 +52,11 @@ public class OrderController {
                     .body(ApiResponse.error("Erreur lors de la récupération des commandes"));
         }
     }
-
+    
+    /**
+     * Endpoint pour récupérer les commandes de l'utilisateur connecté
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("/mine")
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrders() {
         try {
@@ -64,7 +72,11 @@ public class OrderController {
                     .body(ApiResponse.error("Erreur lors de la récupération de vos commandes"));
         }
     }
-
+    /**
+     * Endpoint pour créer une nouvelle commande
+     * @param order Commande à créer
+     * @return ResponseEntity<ApiResponse<Order>>
+     */
     @PostMapping("")
     public ResponseEntity<ApiResponse<Order>> createOrder(@RequestBody Order order) {
         try {
@@ -83,6 +95,12 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint pour mettre à jour une commande existante
+     * @param id ID de la commande à mettre à jour
+     * @param order Commande mise à jour
+     * @return ResponseEntity<ApiResponse<Order>>
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Order>> updateOrder(@PathVariable int id, @RequestBody Order order) {
         try {
@@ -112,6 +130,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint pour récupérer une commande par son ID
+     * @param id
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<List<Order>>> getOrderById(@PathVariable int id) {
         try {
@@ -136,6 +159,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint pour supprimer une commande par son ID
+     * @param id ID de la commande à supprimer
+     * @return ResponseEntity<ApiResponse<Void>>
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(@PathVariable int id) {
         try {
@@ -161,6 +189,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint pour récupérer les commandes d'un utilisateur par son ID
+     * @param userid ID de l'utilisateur
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("/users/{userid}")
     public ResponseEntity<ApiResponse<List<Order>>> getOrdersByUserId(@PathVariable int userid) {
         try {
@@ -179,6 +212,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint pour récupérer les commandes créées après une date spécifique
+     * @param limit Date limite
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("/creationdateafter/{limit}")
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersCreatedAfter(@PathVariable Date limit) {
         try {
@@ -202,7 +240,12 @@ public class OrderController {
                     .body(ApiResponse.error("Erreur lors de la recherche des commandes par date de création"));
         }
     }
-
+        
+    /**
+     * Endpoint pour récupérer les commandes avec une date de début de voyage après une date spécifique
+     * @param limit Date limite
+     * @return ResponseEntity<ApiResponse<List<Order>>>
+     */
     @GetMapping("/tripstartdateafter/{limit}")
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersWithTripStartAfter(@PathVariable Date limit) {
         try {

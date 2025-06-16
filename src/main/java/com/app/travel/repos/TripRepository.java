@@ -34,6 +34,7 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
            "LOWER(CAST(t.destinationContinent AS string)) LIKE LOWER(CONCAT('%', :character, '%')) OR " +
            "LOWER(t.description) LIKE LOWER(CONCAT('%', :character, '%'))")
     List<Trip> findByCharacter(@Param("character") String character);
+    
         /* Trouve les voyages par continent et pays */
     List<Trip> findByDestinationContinentAndDestinationCountry(
         Continent continent, Country country);

@@ -32,7 +32,6 @@ public class Trip implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // Correction: Noms des champs cohérents avec les getters/setters
     @Enumerated(EnumType.STRING)
     @Column(name = "destination_country")
     private Country destinationCountry;
@@ -55,12 +54,13 @@ public class Trip implements Serializable {
     @JsonIgnore
     private Collection<Order> orders;
 
-    @ManyToMany(mappedBy = "bookmarks")
+    @ManyToMany(mappedBy = "bookmarks", fetch = FetchType.LAZY)
     @JsonIgnore
     private Collection<Users> lovers;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
+    @JsonIgnore
     private Collection<Option> packageOptions;
 
     private int unitPrice;
@@ -82,8 +82,6 @@ public class Trip implements Serializable {
         this.unitPrice = unitPrice;
     }
 
-    // === GETTERS ET SETTERS CORRIGÉS ===
-    
     public int getId() {
         return id;
     }
@@ -172,41 +170,47 @@ public class Trip implements Serializable {
         this.version = version;
     }
 
-    // === MÉTHODES UTILITAIRES ===
+    // // === MÉTHODES UTILITAIRES ===
     
-    /**
-     * Vérifie si le voyage a des commandes
-     */
     public boolean hasOrders() {
-        return orders != null && !orders.isEmpty();
+        try {
+            return orders != null && !orders.isEmpty();
+        } catch (Exception e) {
+            return false; // En cas d'erreur de lazy loading
+        }
     }
     
     /**
-     * Vérifie si le voyage est dans les favoris
+     * Vérifie si le voyage est dans les favoris (sécurisé pour lazy loading)
      */
     public boolean hasFavorites() {
-        return lovers != null && !lovers.isEmpty();
+        try {
+            return lovers != null && !lovers.isEmpty();
+        } catch (Exception e) {
+            return false; // En cas d'erreur de lazy loading
+        }
     }
     
     /**
-     * Obtient le nombre de commandes
+     * Obtient le nombre de commandes (sécurisé pour lazy loading)
      */
     public int getOrderCount() {
-        return orders != null ? orders.size() : 0;
+        try {
+            return orders != null ? orders.size() : 0;
+        } catch (Exception e) {
+            return 0; // En cas d'erreur de lazy loading
+        }
     }
     
     /**
-     * Obtient le nombre de favoris
+     * Obtient le nombre de favoris (sécurisé pour lazy loading)
      */
     public int getFavoriteCount() {
-        return lovers != null ? lovers.size() : 0;
-    }
-    
-    /**
-     * Obtient le nombre d'options
-     */
-    public int getOptionCount() {
-        return packageOptions != null ? packageOptions.size() : 0;
+        try {
+            return lovers != null ? lovers.size() : 0;
+        } catch (Exception e) {
+            return 0; // En cas d'erreur de lazy loading
+        }
     }
 
     // === MÉTHODES D'AFFICHAGE ===
@@ -214,13 +218,13 @@ public class Trip implements Serializable {
     /**
      * Retourne une représentation textuelle de la destination complète
      */
-    public String getFullDestination() {
-        return String.format("%s, %s, %s", 
-            destinationCity != null ? destinationCity.name() : "N/A",
-            destinationCountry != null ? destinationCountry.name() : "N/A",
-            destinationContinent != null ? destinationContinent.name() : "N/A"
-        );
-    }
+    // public String getFullDestination() {
+    //     return String.format("%s, %s, %s", 
+    //         destinationCity != null ? destinationCity.name() : "N/A",
+    //         destinationCountry != null ? destinationCountry.name() : "N/A",
+    //         destinationContinent != null ? destinationContinent.name() : "N/A"
+    //     );
+    // }
     
     /**
      * Retourne une représentation formatée du prix
@@ -228,6 +232,22 @@ public class Trip implements Serializable {
     public String getFormattedPrice() {
         return String.format("%d€", unitPrice);
     }
+
+    // @Override
+    // public String toString() {
+    //     return "Trip [" +
+    //             "id=" + id +
+    //             ", destinationCountry=" + destinationCountry +
+    //             ", destinationContinent=" + destinationContinent +
+    //             ", destinationCity=" + destinationCity +
+    //             ", minimumDuration=" + minimumDuration +
+    //             ", description='" + description + '\'' +
+    //             ", unitPrice=" + unitPrice +
+    //             ", orderCount=" + getOrderCount() +
+    //             ", favoriteCount=" + getFavoriteCount() +
+    //             ", optionCount=" + getOptionCount() +
+    //             ']';
+    // }
 
     @Override
     public String toString() {
@@ -239,24 +259,21 @@ public class Trip implements Serializable {
                 ", minimumDuration=" + minimumDuration +
                 ", description='" + description + '\'' +
                 ", unitPrice=" + unitPrice +
-                ", orderCount=" + getOrderCount() +
-                ", favoriteCount=" + getFavoriteCount() +
-                ", optionCount=" + getOptionCount() +
                 ']';
     }
 
     // === MÉTHODES EQUALS ET HASHCODE ===
     
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Trip trip = (Trip) obj;
-        return id == trip.id;
-    }
+    // @Override
+    // public boolean equals(Object obj) {
+    //     if (this == obj) return true;
+    //     if (obj == null || getClass() != obj.getClass()) return false;
+    //     Trip trip = (Trip) obj;
+    //     return id == trip.id;
+    // }
 
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(id);
-    }
+    // @Override
+    // public int hashCode() {
+    //     return Integer.hashCode(id);
+    // }
 }

@@ -20,7 +20,6 @@ import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
 import com.app.travel.utils.ContextUtil;
-// import com.app.travel.security.JwtUtil.LoginRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -41,9 +40,12 @@ public class UsersController {
     @Autowired
     private TokenBlacklistService tokenBlacklistService;
 
-    // @Autowired
-    // private PasswordEncoder passwordEncoder;
-
+    /**
+     * Endpoint pour récupérer tous les utilisateurs.
+     * Accessible uniquement par les administrateurs.
+     *
+     * @return Liste des utilisateurs ou un message d'erreur.
+     */
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Users>>> getAllUsers() {
         try {
@@ -63,6 +65,13 @@ public class UsersController {
         }
     }
 
+    /**
+     * Endpoint pour récupérer un utilisateur par son ID.
+     * Vérifie les permissions d'accès.
+     *
+     * @param id L'ID de l'utilisateur à récupérer.
+     * @return L'utilisateur ou un message d'erreur.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Users>> getUserById(@PathVariable int id) {
         try {
@@ -82,7 +91,12 @@ public class UsersController {
                     .body(ApiResponse.error("Erreur lors de la récupération des informations utilisateur"));
         }
     }
-
+    /**
+     * Endpoint pour récupérer le profil de l'utilisateur actuellement connecté.
+     * Vérifie si l'utilisateur est authentifié.
+     *
+     * @return Le profil de l'utilisateur ou un message d'erreur.
+     */
     @GetMapping("/profil")
     public ResponseEntity<ApiResponse<Users>> getCurrentUser() {
         try {
@@ -99,6 +113,14 @@ public class UsersController {
         }
     }
 
+    /**
+     * Endpoint pour mettre à jour les informations d'un utilisateur.
+     * Vérifie les permissions d'accès.
+     *
+     * @param id   L'ID de l'utilisateur à mettre à jour.
+     * @param user Les nouvelles informations de l'utilisateur.
+     * @return L'utilisateur mis à jour ou un message d'erreur.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Users>> updateUser(@PathVariable int id, @RequestBody Users user) {
         try {
@@ -122,30 +144,13 @@ public class UsersController {
         }
     }
 
-    // @PostMapping("/login")
-    // public ResponseEntity<ApiResponse<Users>> findUserLogPwd(@RequestBody LoginRequest loginRequest) {
-    //     try {
-    //         Users user = repos.findByUsername(loginRequest.getUsername()).orElse(null);
-    //         if (user == null) {
-    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-    //                     .body(ApiResponse.error("Utilisateur non trouvé."));
-    //         }
-
-    //         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-    //             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-    //                     .body(ApiResponse.error("Mot de passe incorrect."));
-    //         }
-
-    //         String token = jwtUtil.generateToken(user.getUsername());
-
-    //         return ResponseEntity.ok(ApiResponse.success(true, user, token));
-
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-    //                 .body(ApiResponse.error("Erreur lors de l'authentification."));
-    //     }
-    // }
-
+    /**
+     * Endpoint pour supprimer un utilisateur.
+     * Vérifie les permissions d'accès et gère la suppression de l'utilisateur actuel.
+     *
+     * @param id L'ID de l'utilisateur à supprimer.
+     * @return Un message de succès ou d'erreur.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {
         try {

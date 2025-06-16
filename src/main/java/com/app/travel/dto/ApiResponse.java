@@ -15,7 +15,6 @@ public class ApiResponse<T> {
     private T data;
     private String timestamp;
     private String error;
-    // private String token;
 
     public ApiResponse() {
         this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Paris")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -38,20 +37,10 @@ public class ApiResponse<T> {
         this.data =data;
     }
 
-    // public ApiResponse(boolean success, T data, String token) {
-    //     this();
-    //     this.success = success;
-    //     this.data =data;
-    //     this.token = token;
-    // }
-
     public static <T> ApiResponse<T> success(boolean success, T data) {
         return new ApiResponse<>(success, data);
     }
 
-    // public static <T> ApiResponse<T> success(boolean success, T data, String token) {
-    //     return new ApiResponse<>(success, data, token);
-    // }
 
     public static <T> ApiResponse<T> success(String message) {
         return new ApiResponse<>(true, message);
@@ -97,14 +86,6 @@ public class ApiResponse<T> {
     public void setData(T data) {
         this.data = data;
     }
-
-    // public String getToken() {
-    //     return token;
-    // }
-
-    // public void setToken(String token) {
-    //     this.token = token;
-    // }
 
     public String getTimestamp() {
         return timestamp;

@@ -25,6 +25,10 @@ public class OptionController {
     @Autowired
     private OptionService optionService;
 
+    /**
+     * Récupère toutes les options disponibles.
+     * @return une liste d'options.
+     */
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Option>>> getAllOptions() {
         try {
@@ -36,6 +40,11 @@ public class OptionController {
         }
     }
 
+    /**
+     * Récupère une option par son ID.
+     * @param id l'ID de l'option à récupérer.
+     * @return l'option correspondante ou un message d'erreur si non trouvée.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Option>> getOptionById(@PathVariable int id) {
         try {
@@ -51,7 +60,11 @@ public class OptionController {
                     .body(ApiResponse.error("Erreur lors de la récupération de l'option"));
         }
     }
-
+    /**
+     * Récupère les options par catégorie.
+     * @param category la catégorie des options à récupérer.
+     * @return une liste d'options de la catégorie spécifiée ou un message d'erreur si la catégorie est invalide.
+     */
     @GetMapping("/category/{category}")
     public ResponseEntity<ApiResponse<List<Option>>> getOptionsByCategory(@PathVariable String category) {
         try {
@@ -66,7 +79,12 @@ public class OptionController {
                     .body(ApiResponse.error("Erreur lors de la recherche par catégorie"));
         }
     }
-
+    /**
+     * Récupère les options par plage de prix.
+     * @param minPrice le prix minimum.
+     * @param maxPrice le prix maximum.
+     * @return une liste d'options dans la plage de prix spécifiée ou un message d'erreur si la plage est invalide.
+     */
     @GetMapping("/price/{minPrice}/{maxPrice}")
     public ResponseEntity<ApiResponse<List<Option>>> getOptionsByPriceRange(
             @PathVariable double minPrice, @PathVariable double maxPrice) {

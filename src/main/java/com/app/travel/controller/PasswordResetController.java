@@ -23,6 +23,11 @@ public class PasswordResetController {
 	@Autowired
 	private PasswordResetService service;
 
+	/**
+	 * Envoie un email de réinitialisation de mot de passe à l'utilisateur.
+	 * @param request Contient l'email de l'utilisateur.
+	 * @return Réponse indiquant si l'email a été envoyé avec succès ou non.
+	 */
 	@PostMapping("/forgot")
 	public ApiResponse<String> forgotPassword(@RequestBody Users request) {
 		try {
@@ -33,6 +38,7 @@ public class PasswordResetController {
 		}
 	}
 
+	// Vérification du token de réinitialisation
 	@GetMapping("/reset")
 	public ApiResponse<String> resetPassword(@RequestParam String email, @RequestParam String token) {
 		if (service.validateToken(email, token).isPresent()) {
@@ -42,6 +48,7 @@ public class PasswordResetController {
 		}
 	}
 
+	// Réinitialisation du mot de passe
 	@PostMapping("/change")
 	public ApiResponse<String> changePassword(@RequestBody Map<String, String> request) {
 		try {

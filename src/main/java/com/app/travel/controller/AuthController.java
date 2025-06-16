@@ -52,6 +52,11 @@ public class AuthController {
 	@Autowired
 	private TokenBlacklistService tokenBlacklistService;
 
+	/**
+	 * Authentifie l'utilisateur et génère un token JWT.
+	 * @param user l'utilisateur avec nom d'utilisateur et mot de passe.
+	 * @return un token JWT si l'authentification réussit, ou un message d'erreur en cas d'échec.
+	 */
 	@PostMapping("/signin")
 	public ApiResponse<String> authenticateUser(@RequestBody Users user) {
 		String username = user.getUsername();
@@ -87,7 +92,9 @@ public class AuthController {
 			return ApiResponse.error("Échec de l'authentification", message);
 		}
 	}
+
 	
+	// Inscription d'un nouvel utilisateur
     @PostMapping("/signup")
 	public ApiResponse<String> registerUser(@RequestBody Users user) {
 		if (repos.existsByUsername(user.getUsername())) {
@@ -111,6 +118,7 @@ public class AuthController {
 		}
 	}
 
+	// Déconnexion de l'utilisateur
     @PostMapping("/signout")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 	public ResponseEntity<?> signoutUser(HttpServletRequest request) {

@@ -112,32 +112,57 @@ public class UsersController {
                     .body(ApiResponse.error("Erreur lors de la récupération du profil"));
         }
     }
+    /**
+     * Endpoint pour mettre à jour le profil de l'utilisateur actuellement connecté.
+     * Vérifie si l'utilisateur est authentifié.
+     *
+     * @param user Les nouvelles informations de l'utilisateur.
+     * @return L'utilisateur mis à jour ou un message d'erreur.
+     */
+    @PutMapping("/profil")
+    public ResponseEntity<ApiResponse<Users>> updateCurrentUserProfile(@RequestBody Users user) {
+        try {
+            Users currentUser = contextUtil.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Utilisateur non authentifié"));
+            }
+            user.setUserId(currentUser.getUserId());
+            user.setRole(currentUser.getRole());       
+            Users updatedUser = repos.save(user);
+            return ResponseEntity.ok(ApiResponse.success("Profil mis à jour avec succès", updatedUser));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la mise à jour du profil"));
+        }
+    }
 
     /**
-     * Endpoint pour mettre à jour les informations d'un utilisateur.
-     * Vérifie les permissions d'accès.
+     * Endpoint pour mettre à jour un utilisateur par son ID.
+     * Accessible uniquement par les administrateurs.
      *
-     * @param id   L'ID de l'utilisateur à mettre à jour.
+     * @param id L'ID de l'utilisateur à mettre à jour.
      * @param user Les nouvelles informations de l'utilisateur.
      * @return L'utilisateur mis à jour ou un message d'erreur.
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Users>> updateUser(@PathVariable int id, @RequestBody Users user) {
         try {
+            // Récupérer l'utilisateur courant      
+            if (!contextUtil.isAdmin()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Accès refusé : privilèges administrateur requis"));
+            }  
             Users existingUser = repos.findById(id).orElse(null);
             if (existingUser == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Utilisateur non trouvé avec l'ID: " + id));
             }
-
-            if (!contextUtil.canAccessUser(existingUser)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
-            }
-
             user.setUserId(id);
             Users updatedUser = repos.save(user);
             return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
+            
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la mise à jour des informations"));

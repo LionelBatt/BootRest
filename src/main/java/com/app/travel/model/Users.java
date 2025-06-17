@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -49,7 +50,7 @@ public class Users {
 	@Column(nullable = false)
 	private String address;
 
-	@OneToOne
+	@OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinColumn(name = "card_info_id")
 	private CardInfo cardInfo;
 

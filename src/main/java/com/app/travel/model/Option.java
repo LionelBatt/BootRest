@@ -1,8 +1,13 @@
 package com.app.travel.model;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,7 +21,7 @@ public class Option {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "option_id")
+    @Column(name = "optionid")
     private int optionId;
 
     @Column(name = "description", nullable = false)
@@ -25,12 +30,17 @@ public class Option {
     @Column(nullable = false)
     private double prix;
 
-    @ManyToMany(mappedBy = "options")
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "options")
+    @JsonIgnore
     private Collection<Order> orders;
 
-    @ManyToMany(mappedBy = "packageOptions")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "packageOptions")
+    @JsonIgnore
     private Collection<Trip> trips;
-    
+
     @Version
     private int version;
 
@@ -70,5 +80,38 @@ public class Option {
 
     public int getVersion() {
         return version;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Collection<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(Collection<Order> orders) {
+        this.orders = orders;
+    }
+
+    public Collection<Trip> getTrips() {
+        return trips;
+    }
+
+    public void setTrips(Collection<Trip> trips) {
+        this.trips = trips;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "Option [optionId=" + optionId + ", desc=" + desc + ", prix=" + prix + ", category=" + category + "]";
     }
 }

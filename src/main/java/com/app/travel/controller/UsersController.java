@@ -1,22 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package com.app.travel.controller;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,80 +19,178 @@ import com.app.travel.model.Users;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
+import com.app.travel.utils.ContextUtil;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpServletRequest;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UsersController {
 
     @Autowired
-	UserRepository repos;
+    UserRepository repos;
 
     @Autowired
-    TokenBlacklistService tokenBlacklistService;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    JwtUtil jwtUtil;
+    private ContextUtil contextUtil;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Users>> findUserInformation(@PathVariable int id){
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
+    /**
+     * Endpoint pour récupérer tous les utilisateurs.
+     * Accessible uniquement par les administrateurs.
+     *
+     * @return Liste des utilisateurs ou un message d'erreur.
+     */
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<List<Users>>> getAllUsers() {
         try {
-            Users user = repos.findById(id).orElse(null);
-            if(user != null){
-                return ResponseEntity.ok(ApiResponse.success(true, user));
+            if (contextUtil.isAdmin()) {
+                List<Users> users = repos.findAll();
+                if (users.isEmpty()) {
+                    return ResponseEntity.ok(ApiResponse.error("Aucun utilisateur trouvé"));
+                }
+                return ResponseEntity.ok(ApiResponse.success("Liste des utilisateurs", users));
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error("Erreur lors de la récupération des informations utilisateur", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération des utilisateurs"));
         }
-        return ResponseEntity.ok(ApiResponse.error("Aucun utilisateur trouvé avec l'id: " + id));
     }
 
-    @PutMapping("")
-    @PreAuthorize("hasRole('ADMIN') or #user.userId == authentication.principal.userId")
-    public ResponseEntity<ApiResponse<Users>> updateUser(@RequestBody Users user) {
+    /**
+     * Endpoint pour récupérer un utilisateur par son ID.
+     * Vérifie les permissions d'accès.
+     *
+     * @param id L'ID de l'utilisateur à récupérer.
+     * @return L'utilisateur ou un message d'erreur.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Users>> getUserById(@PathVariable int id) {
         try {
+            Users user = repos.findById(id).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Aucun utilisateur trouvé avec l'id: " + id));
+            }
+
+            if (!contextUtil.canAccessUser(user)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+            return ResponseEntity.ok(ApiResponse.success("Utilisateur trouvé", user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération des informations utilisateur"));
+        }
+    }
+    /**
+     * Endpoint pour récupérer le profil de l'utilisateur actuellement connecté.
+     * Vérifie si l'utilisateur est authentifié.
+     *
+     * @return Le profil de l'utilisateur ou un message d'erreur.
+     */
+    @GetMapping("/profil")
+    public ResponseEntity<ApiResponse<Users>> getCurrentUser() {
+        try {
+            Users user = contextUtil.getCurrentUser();
+            if (user != null) {
+                return ResponseEntity.ok(ApiResponse.success("Profil:", user));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Profil non trouvé"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la récupération du profil"));
+        }
+    }
+
+    /**
+     * Endpoint pour mettre à jour les informations d'un utilisateur.
+     * Vérifie les permissions d'accès.
+     *
+     * @param id   L'ID de l'utilisateur à mettre à jour.
+     * @param user Les nouvelles informations de l'utilisateur.
+     * @return L'utilisateur mis à jour ou un message d'erreur.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Users>> updateUser(@PathVariable int id, @RequestBody Users user) {
+        try {
+            Users existingUser = repos.findById(id).orElse(null);
+            if (existingUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé avec l'ID: " + id));
+            }
+
+            if (!contextUtil.canAccessUser(existingUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+
+            user.setUserId(id);
             Users updatedUser = repos.save(user);
             return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la mise à jour des informations", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la mise à jour des informations"));
         }
     }
 
+    /**
+     * Endpoint pour supprimer un utilisateur.
+     * Vérifie les permissions d'accès et gère la suppression de l'utilisateur actuel.
+     *
+     * @param id L'ID de l'utilisateur à supprimer.
+     * @return Un message de succès ou d'erreur.
+     */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {
         try {
-            // Récupérer l'utilisateur connecté
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            UserDetails currentUser = (UserDetails) auth.getPrincipal();
-            
-            // Récupérer l'utilisateur à supprimer
             Users userToDelete = repos.findById(id).orElse(null);
             if (userToDelete == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Utilisateur non trouvé"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("Utilisateur non trouvé"));
             }
-            
-            // Vérifier si l'utilisateur supprime son propre compte
-            boolean isSelfDeletion = userToDelete.getUsername().equals(currentUser.getUsername());
-            String token = jwtUtil.extractTokenFromRequest(request);
-            if (token != null) {
-                // Si c'est une suppression de compte par l'utilisateur lui-même, ajouter le token à la liste noire
-                if (isSelfDeletion) {
+
+            if (!contextUtil.canAccessUser(userToDelete)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
+            }
+
+            Users currentUser = contextUtil.getCurrentUser();
+            boolean isSelfDeletion = false;
+
+            if (currentUser != null) {
+                isSelfDeletion = currentUser.getUserId() == userToDelete.getUserId();
+            }
+
+            if (isSelfDeletion) {
+                String token = jwtUtil.extractTokenFromRequest(request);
+                if (token != null) {
                     tokenBlacklistService.blacklistToken(token);
                 }
             }
+
             repos.deleteById(id);
 
-            String message = isSelfDeletion ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté." : "Utilisateur supprimé avec succès";
-                
+            String message = isSelfDeletion
+                    ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté."
+                    : "Utilisateur supprimé avec succès";
+
             return ResponseEntity.ok(ApiResponse.success(message));
-            
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
         }
     }
-    
+
 }

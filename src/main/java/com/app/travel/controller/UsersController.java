@@ -126,15 +126,21 @@ public class UsersController {
             if (currentUser == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("Utilisateur non authentifié"));
-            }
+            }     
             user.setUserId(currentUser.getUserId());
-            user.setRole(currentUser.getRole());       
+            user.setRole(currentUser.getRole());
+            user.setVersion(currentUser.getVersion());
+            if (user.getCardInfo() != null && currentUser.getCardInfo() != null) {
+                user.getCardInfo().setId(currentUser.getCardInfo().getId());
+            }
             Users updatedUser = repos.save(user);
             return ResponseEntity.ok(ApiResponse.success("Profil mis à jour avec succès", updatedUser));
             
         } catch (Exception e) {
+            // Log l'erreur pour le débogage
+            System.err.println("Erreur lors de la mise à jour du profil: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour du profil"));
+                    .body(ApiResponse.error("Erreur lors de la mise à jour du profil: " + e.getMessage()));
         }
     }
 

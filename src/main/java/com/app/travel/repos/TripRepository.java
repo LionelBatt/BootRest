@@ -27,10 +27,10 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
            "(:city IS NULL OR t.destinationCity = :city) AND " +
            "t.minimumDuration >= :minimumDuration AND t.minimumDuration <= :maximumDuration AND " +
            "t.unitPrice >= :prixmin AND t.unitPrice <= :prixmax AND " +
-           "(:option1 <= 0 OR :option2 <= 0 OR :option3 <= 0 OR o.optionId IN (:option1, :option2, :option3))")
+           "(:options IS NULL OR o.optionId IN (:options))")
     List<Trip> findByDestinationCityWithOptions(@Param("continent") Continent continent, @Param("country") Country country, @Param("city") City city, 
-    @Param("minimumDuration") int minimumDuration, @Param("maximumDuration") int maximumDuration, @Param("option1") int option1, 
-    @Param("option2") int option2, @Param("option3") int option3, @Param("prixmin") int prixmin, @Param("prixmax") int prixmax);
+    @Param("minimumDuration") int minimumDuration, @Param("maximumDuration") int maximumDuration, @Param("options") String options, 
+    @Param("prixmin") int prixmin, @Param("prixmax") int prixmax);
 
     @Query("SELECT t FROM Trip t WHERE " +
            "LOWER(CAST(t.destinationCity AS string)) LIKE LOWER(CONCAT('%', :character, '%')) OR " +

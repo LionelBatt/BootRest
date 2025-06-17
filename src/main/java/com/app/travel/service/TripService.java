@@ -56,7 +56,7 @@ public class TripService {
 
     @Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #option1id + ':' + #option2id + ':' + #option3id + ':' + #prixmin + ':' + #prixmax")
     public List<Trip> searchTripsWithFilter(Continent destinationContinent, Country destinationCountry, City destinationCity, 
-            int minimumDuration, int maximumDuration, Integer option1id, Integer option2id, Integer option3id, 
+            int minimumDuration, int maximumDuration, int option1id, int option2id, int option3id, 
             int prixmin, int prixmax) {
         return tripRepository.findByDestinationCityWithOptions(destinationContinent, destinationCountry, destinationCity, 
                 minimumDuration, maximumDuration, option1id, option2id, option3id, prixmin, prixmax);

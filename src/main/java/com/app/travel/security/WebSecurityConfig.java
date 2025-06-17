@@ -93,6 +93,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/trips/country/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/trips/city/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/trips/search/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/trips/filter/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/trips/trips-by-location/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/destination/**").permitAll()

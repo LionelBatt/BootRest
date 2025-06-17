@@ -60,7 +60,6 @@ public class Trip implements Serializable {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="trip_options", joinColumns = @JoinColumn(name = "trip_id"), inverseJoinColumns = @JoinColumn(name = "option_id"))
-    @JsonIgnore
     private Collection<Option> packageOptions;
 
     private int unitPrice;
@@ -233,22 +232,7 @@ public class Trip implements Serializable {
         return String.format("%d€", unitPrice);
     }
 
-    // @Override
-    // public String toString() {
-    //     return "Trip [" +
-    //             "id=" + id +
-    //             ", destinationCountry=" + destinationCountry +
-    //             ", destinationContinent=" + destinationContinent +
-    //             ", destinationCity=" + destinationCity +
-    //             ", minimumDuration=" + minimumDuration +
-    //             ", description='" + description + '\'' +
-    //             ", unitPrice=" + unitPrice +
-    //             ", orderCount=" + getOrderCount() +
-    //             ", favoriteCount=" + getFavoriteCount() +
-    //             ", optionCount=" + getOptionCount() +
-    //             ']';
-    // }
-
+    
     @Override
     public String toString() {
         return "Trip [" +
@@ -258,6 +242,7 @@ public class Trip implements Serializable {
                 ", destinationCity=" + destinationCity +
                 ", minimumDuration=" + minimumDuration +
                 ", description='" + description + '\'' +
+                ", packageOptions=" + packageOptions +
                 ", unitPrice=" + unitPrice +
                 ']';
     }

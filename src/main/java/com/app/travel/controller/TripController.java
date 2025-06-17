@@ -238,10 +238,10 @@ public class TripController {
 
     /**
      * Offer filter option on trip research in sql database.
-     * <p>Without filter research url : /research/nul/nul/nul/0/9999/0/0/0/0/9999999
-     * @param destinationContinent (default: "nul")
-     * @param destinationCountry (default: "nul")
-     * @param destinationCity (default: "nul")
+     * <p>Without filter research url : /filter/null/null/null/0/9999/0/0/0/0/9999999
+     * @param destinationContinent (default: "null")
+     * @param destinationCountry (default: "null")
+     * @param destinationCity (default: "null")
      * @param minimumDuration (default: 0)
      * @param maximumDuration (default: 9999)
      * @param option1id (default: 0)
@@ -251,26 +251,92 @@ public class TripController {
      * @param prixmax (default: 9999999)
      * @return List<Trip> of Trip matching research filter
      */
-    @GetMapping("/search/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
+    @GetMapping("/filter/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
     @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
     @PathVariable int prixmax) {
         try {
-            Continent destinationCont = destinationContinent.equalsIgnoreCase("null")? null: Continent.valueOf(destinationContinent.toUpperCase());
-            Country destinationCount = destinationCountry.equalsIgnoreCase("null")? null: Country.valueOf(destinationCountry.toUpperCase());
-            City destinationCit = destinationCity.equalsIgnoreCase("null")? null: City.valueOf(destinationCity.toUpperCase());
-            Integer opt1 = (option1id == 0)? null: option1id;
-            Integer opt2 = (option2id == 0)? null: option2id;
-            Integer opt3 = (option3id == 0)? null: option3id;
-            List<Trip> trips = tripService.searchTripsWithFilter(destinationCont, destinationCount, destinationCit, minimumDuration, maximumDuration, opt1, opt2, opt3, prixmin, prixmax);
-            return ResponseEntity.ok(ApiResponse.success("Voyages trouvés pour cette recherche: " , trips));
+            // Validation et conversion des paramètres
+            Continent destinationCont = null;
+            Country destinationCount = null;
+            City destinationCit = null;
+            
+            // Conversion sécurisée des enums
+            if (destinationContinent != null && !destinationContinent.equalsIgnoreCase("null") && !destinationContinent.trim().isEmpty()) {
+                try {
+                    destinationCont = Continent.valueOf(destinationContinent.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Continent invalide: " + destinationContinent + ". Continents disponibles: " + java.util.Arrays.toString(Continent.values())));
+                }
+            }
+            
+            if (destinationCountry != null && !destinationCountry.equalsIgnoreCase("null") && !destinationCountry.trim().isEmpty()) {
+                try {
+                    destinationCount = Country.valueOf(destinationCountry.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Pays invalide: " + destinationCountry + ". Pays disponibles: " + java.util.Arrays.toString(Country.values())));
+                }
+            }
+            
+            if (destinationCity != null && !destinationCity.equalsIgnoreCase("null") && !destinationCity.trim().isEmpty()) {
+                try {
+                    destinationCit = City.valueOf(destinationCity.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error("Ville invalide: " + destinationCity + ". Villes disponibles: " + java.util.Arrays.toString(City.values())));
+                }
+            }
+            
+            // Validation des paramètres numériques
+            if (minimumDuration < 0 || maximumDuration < 0 || prixmin < 0 || prixmax < 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Les valeurs numériques ne peuvent pas être négatives"));
+            }
+            
+            if (minimumDuration > maximumDuration) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("La durée minimale ne peut pas être supérieure à la durée maximale"));
+            }
+            
+            if (prixmin > prixmax) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Le prix minimum ne peut pas être supérieur au prix maximum"));
+            }
+            
+            // Conversion des options (0 = non spécifié, remplacé par -1 pour éviter les conflits)
+            int opt1 = (option1id == 0) ? -1 : option1id;
+            int opt2 = (option2id == 0) ? -1 : option2id;
+            int opt3 = (option3id == 0) ? -1 : option3id;
+            
+            // Recherche avec les filtres
+            List<Trip> trips = tripService.searchTripsWithFilter(
+                destinationCont, destinationCount, destinationCit, 
+                minimumDuration, maximumDuration, 
+                opt1, opt2, opt3, 
+                prixmin, prixmax
+            );
+            
+            // Message informatif sur les filtres appliqués
+            StringBuilder filterInfo = new StringBuilder("Recherche avec filtres: ");
+            if (destinationCont != null) filterInfo.append("Continent=").append(destinationCont).append(", ");
+            if (destinationCount != null) filterInfo.append("Pays=").append(destinationCount).append(", ");
+            if (destinationCit != null) filterInfo.append("Ville=").append(destinationCit).append(", ");
+            filterInfo.append("Durée=[").append(minimumDuration).append("-").append(maximumDuration).append("], ");
+            filterInfo.append("Prix=[").append(prixmin).append("€-").append(prixmax).append("€]");
+            if (option1id != 0 || option2id != 0 || option3id != 0) {
+                filterInfo.append(", Options=[").append(option1id).append(",").append(option2id).append(",").append(option3id).append("]");
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success(filterInfo.toString() + " - " + trips.size() + " résultat(s)", trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Destination invalide: " + destinationContinent + " / " + destinationCountry + " / " + destinationCity + "."));
+                    .body(ApiResponse.error("Paramètre invalide: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche"));
+                    .body(ApiResponse.error("Erreur lors de la recherche avec filtres: " + e.getMessage()));
         }
     }
 
@@ -279,7 +345,7 @@ public class TripController {
      * @param character
      * @return ResponseEntity<ApiResponse<List<Trip>>>
      */
-    @GetMapping("/search/{character}")
+    @GetMapping("/search/text/{character}")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Trip>>> findByCharacter(@PathVariable String character) {
         try {
@@ -290,126 +356,6 @@ public class TripController {
                     .body(ApiResponse.error("Erreur lors de la recherche par caractère"));
         }
     }
-
-//    /*** Endpoint pour récupérer tous les continents disponibles*/
-//     @GetMapping("/continents")
-//     @Transactional(readOnly = true)
-//     public ResponseEntity<ApiResponse<List<String>>> getContinents() {
-//         try {
-//             List<String> continents = Arrays.stream(Continent.values())
-//                     .map(Enum::name)
-//                     .collect(Collectors.toList());
-//             return ResponseEntity.ok(ApiResponse.success("Continents récupérés avec succès", continents));
-//         } catch (Exception e) {
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                     .body(ApiResponse.error("Erreur lors de la récupération des continents"));
-//         }
-//     }
-
-//     /*** Endpoint pour récupérer les pays d'un continent donné   */
-//     @GetMapping("/countries")
-//     @Transactional(readOnly = true)
-//     public ResponseEntity<ApiResponse<List<String>>> getCountriesByContinent(
-//             @RequestParam String continent) {
-//         try {
-//             Continent continentEnum = Continent.valueOf(continent.toUpperCase());
-            
-//             // Récupère tous les voyages du continent puis extrait les pays uniques
-//             List<String> countries = tripRepository.findByDestinationContinent(continentEnum)
-//                     .stream()
-//                     .map(trip -> trip.getDestinationCountry().name())
-//                     .distinct()
-//                     .collect(Collectors.toList());
-            
-//             return ResponseEntity.ok(ApiResponse.success(
-//                 "Pays récupérés avec succès pour le continent: " + continent, countries));
-//         } catch (IllegalArgumentException e) {
-//             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                     .body(ApiResponse.error("Continent invalide: " + continent));
-//         } catch (Exception e) {
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                     .body(ApiResponse.error("Erreur lors de la récupération des pays"));
-//         }
-//     }
-
-//     /** Endpoint pour récupérer les villes d'un pays donné*/
-//     @GetMapping("/cities")
-//     @Transactional(readOnly = true)
-//     public ResponseEntity<ApiResponse<List<String>>> getCitiesByCountry(
-//             @RequestParam String country) {
-//         try {
-//             Country countryEnum = Country.valueOf(country.toUpperCase());
-            
-//             // Récupère tous les voyages du pays puis extrait les villes uniques
-//             List<String> cities = tripRepository.findByDestinationCountry(countryEnum)
-//                     .stream()
-//                     .map(trip -> trip.getDestinationCity().name())
-//                     .distinct()
-//                     .collect(Collectors.toList());
-            
-//             return ResponseEntity.ok(ApiResponse.success(
-//                 "Villes récupérées avec succès pour le pays: " + country, cities));
-//         } catch (IllegalArgumentException e) {
-//             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                     .body(ApiResponse.error("Pays invalide: " + country));
-//         } catch (Exception e) {
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                     .body(ApiResponse.error("Erreur lors de la récupération des villes"));
-//         }
-//     }
-
-//     @GetMapping("/trips-by-location")
-//     @Transactional(readOnly = true)
-//     public ResponseEntity<ApiResponse<List<Trip>>> getTripsByLocation(
-//             @RequestParam(required = false) String continent,
-//             @RequestParam(required = false) String country,
-//             @RequestParam(required = false) String city) {
-        
-//         try {
-//             List<Trip> trips;
-//             String message;
-
-//             if (city != null && country != null && continent != null) {
-//                 // Recherche par ville, pays et continent
-//                 City cityEnum = City.valueOf(city.toUpperCase());
-//                 Country countryEnum = Country.valueOf(country.toUpperCase());
-//                 Continent continentEnum = Continent.valueOf(continent.toUpperCase());
-                
-//                 trips = tripRepository.findByDestinationContinentAndDestinationCountryAndDestinationCity(
-//                     continentEnum, countryEnum, cityEnum);
-//                 message = "Voyages trouvés pour " + city + ", " + country + ", " + continent;
-                
-//             } else if (country != null && continent != null) {
-//                 // Recherche par pays et continent
-//                 Country countryEnum = Country.valueOf(country.toUpperCase());
-//                 Continent continentEnum = Continent.valueOf(continent.toUpperCase());
-                
-//                 trips = tripRepository.findByDestinationContinentAndDestinationCountry(
-//                     continentEnum, countryEnum);
-//                 message = "Voyages trouvés pour " + country + ", " + continent;
-                
-//             } else if (continent != null) {
-//                 // Recherche par continent uniquement
-//                 Continent continentEnum = Continent.valueOf(continent.toUpperCase());
-//                 trips = tripRepository.findByDestinationContinent(continentEnum);
-//                 message = "Voyages trouvés pour le continent: " + continent;
-                
-//             } else {
-//                 // Tous les voyages
-//                 trips = tripRepository.findAll();
-//                 message = "Tous les voyages récupérés";
-//             }
-            
-//             return ResponseEntity.ok(ApiResponse.success(message, trips));
-            
-//         } catch (IllegalArgumentException e) {
-//             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                     .body(ApiResponse.error("Paramètre de localisation invalide"));
-//         } catch (Exception e) {
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                     .body(ApiResponse.error("Erreur lors de la recherche par localisation"));
-//         }
-//     }
 
 }
 

@@ -1,7 +1,10 @@
 package com.app.travel.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -300,16 +303,27 @@ public class TripController {
             
             if (prixmin > prixmax) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Le prix minimum ne peut pas être supérieur au prix maximum"));
+                        .body(ApiResponse.error("Le prix minimum ne peut pas être supérieur au prix maximum"));
             }
-            
-            optionsid = (optionsid.equalsIgnoreCase("-1"))? "": optionsid;
 
+            List<Integer> optionsIds = new ArrayList<>();
+            if (optionsid != null && !optionsid.equals("0")) {
+                try {
+                    optionsIds = Arrays.stream(optionsid.split(","))
+                            .map(String::trim)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(ApiResponse.error("Format d'options invalide: " + optionsid));
+                }
+            }
+            System.out.println("Controller $$$$$$$$$$$$$$$$$$$$$$             || " + optionsIds);
             // Recherche avec les filtres
             List<Trip> trips = tripService.searchTripsWithFilter(
                 destinationCont, destinationCount, destinationCit, 
                 minimumDuration, maximumDuration, 
-                optionsid, 
+                optionsIds, 
                 prixmin, prixmax
             );
             
@@ -327,6 +341,7 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Paramètre invalide: " + e.getMessage()));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la recherche avec filtres: " + e.getMessage()));
         }

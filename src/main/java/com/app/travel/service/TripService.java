@@ -54,10 +54,14 @@ public class TripService {
         return tripRepository.findByUser_UserId(userId);
     }
 
-    @Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #optionsid + ':' + #prixmin + ':' + #prixmax")
-    public List<Trip> searchTripsWithFilter(Continent destinationContinent, Country destinationCountry, City destinationCity, 
-            int minimumDuration, int maximumDuration, String optionsid, int prixmin, int prixmax) {
-        return tripRepository.findByDestinationCityWithOptions(destinationContinent, destinationCountry, destinationCity, 
-                minimumDuration, maximumDuration, optionsid, prixmin, prixmax);
+    @Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #optionsIds + ':' + #prixmin + ':' + #prixmax")
+    public List<Trip> searchTripsWithFilter(Continent destinationContinent, Country destinationCountry,
+            City destinationCity, int minimumDuration, int maximumDuration, List<Integer> optionsIds, int prixmin,
+            int prixmax) {
+        boolean optionsEmpty = optionsIds == null || optionsIds.isEmpty();
+        System.out.println("SERVICE $$$$$$$$$$$$                 || " + optionsIds);
+        return tripRepository.findByDestinationCityWithOptions(destinationContinent, destinationCountry,
+                destinationCity,
+                minimumDuration, maximumDuration, optionsIds, optionsEmpty, prixmin, prixmax);
     }
 }

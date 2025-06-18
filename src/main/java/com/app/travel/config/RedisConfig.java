@@ -67,11 +67,7 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
                 .withCacheConfiguration("trips", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("trip-details", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("destinations-continents", config.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("destinations-countries", config.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("destinations-cities", config.entryTtl(Duration.ofMinutes(5)))
-                .withCacheConfiguration("optionsCache", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("options-cache", config.entryTtl(Duration.ofMinutes(5)))
                 .build();
     }
 }

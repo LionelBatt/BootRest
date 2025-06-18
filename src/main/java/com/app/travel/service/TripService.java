@@ -38,7 +38,6 @@ public class TripService {
         return tripRepository.findByDestinationCity(city);
     }
 
-    @Cacheable(value = "trip-details", key = "#id")
     public Optional<Trip> getTripById(int id) {
         return tripRepository.findById(id);
     }

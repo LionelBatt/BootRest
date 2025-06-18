@@ -30,7 +30,7 @@ public class OptionController {
      * Récupère toutes les options disponibles.
      * @return une liste d'options.
      */
-    @Cacheable(value = "options", key = "'allOptions'")
+    @Cacheable(value = "options-cache", key = "'allOptions'")
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Option>>> getAllOptions() {
         try {

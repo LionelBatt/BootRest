@@ -15,6 +15,7 @@ public class ApiResponse<T> {
     private T data;
     private String timestamp;
     private String error;
+    private boolean isAdmin;
 
     public ApiResponse() {
         this.timestamp = LocalDateTime.now(ZoneId.of("Europe/Paris")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -29,6 +30,12 @@ public class ApiResponse<T> {
     public ApiResponse(boolean success, String message, T data) {
         this(success, message);
         this.data = data;
+    }
+
+    public ApiResponse(boolean success, String message, T data, boolean isAdmin) {
+        this(success, message);
+        this.data = data;
+        this.isAdmin = isAdmin;
     }
 
     public ApiResponse(boolean success, T data) {
@@ -49,6 +56,11 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>(true, message, data);
     }
+
+    public static <T> ApiResponse<T> success(String message, T data, boolean isAdmin) {
+        return new ApiResponse<>(true, message, data, isAdmin);
+    }
+
 
     public static <T> ApiResponse<T> error(String message) {
         ApiResponse<T> response = new ApiResponse<>(false, message);
@@ -101,5 +113,13 @@ public class ApiResponse<T> {
 
     public void setError(String error) {
         this.error = error;
+    }
+    
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 }

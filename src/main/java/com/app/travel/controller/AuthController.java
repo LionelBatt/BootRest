@@ -73,11 +73,16 @@ public class AuthController {
 			// Authentifier l'utilisateur
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, user.getPassword()));
 			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+
+			boolean isAdmin = userDetails.getAuthorities().stream()
+            	.anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
 			String token = jwtUtils.generateToken(userDetails.getUsername());
 			
 			// Connexion réussie - réinitialiser les tentatives
 			loginAttemptService.loginSucceeded(username);
-			return ApiResponse.success("Connexion réussie", token);
+			return ApiResponse.success("Connexion réussie", token, isAdmin);
 			
 		} catch (Exception e) {
 

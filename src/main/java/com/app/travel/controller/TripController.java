@@ -244,14 +244,12 @@ public class TripController {
      * @param destinationCity (default: "null")
      * @param minimumDuration (default: 0)
      * @param maximumDuration (default: 9999)
-     * @param option1id (default: 0)
-     * @param option2id (default: 0)
-     * @param option3id (default: 0)
+     * @param optionsid (default: 0)
      * @param prixmin (default: 0)
      * @param prixmax (default: 9999999)
      * @return List<Trip> of Trip matching research filter
      */
-    @GetMapping("/filter/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
+    @GetMapping("/filter/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{optionsid}/{prixmin}/{prixmax}")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
     @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable String optionsid, @PathVariable int prixmin, @PathVariable int prixmax) {

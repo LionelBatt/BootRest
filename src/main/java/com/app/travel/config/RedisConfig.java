@@ -67,7 +67,7 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
                 .withCacheConfiguration("trips", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("options-cache", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("options-cache", config.entryTtl(Duration.ofMinutes(1)))
                 .build();
     }
 }

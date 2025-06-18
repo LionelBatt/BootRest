@@ -22,8 +22,6 @@ public class PasswordResetService {
     @Autowired
     ResetTokenRepository resetTokenRepos;
     
-    @Autowired
-    EmailService service;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -49,7 +47,6 @@ public class PasswordResetService {
 
         resetTokenRepos.save(resetToken);
 
-        sendEmail(email, token);
     }
 
     public void changePassword(String email, String token, String password) {
@@ -73,16 +70,6 @@ public class PasswordResetService {
             return resetToken;
         } else {
             throw new IllegalArgumentException("Invalid or expired token");
-        }
-    }
-
-    private void sendEmail(String email, String token) {
-        try {
-            service.sendPasswordRecovery(email, token);
-            System.out.println("Email sent successfully to: " + email);
-        } catch (Exception e) {
-            System.out.println("Email sending failed, but password reset token created: " + token + " for email: " + email);
-            System.out.println("Error: " + e.getMessage());
         }
     }
 }

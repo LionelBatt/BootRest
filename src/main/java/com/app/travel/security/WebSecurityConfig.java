@@ -95,7 +95,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/trips/search/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/trips/filter/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/trips/trips-by-location/**").permitAll()
-
+        
                 .requestMatchers(HttpMethod.GET, "/destination/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/stats/**").hasRole("ADMIN")
@@ -103,13 +103,15 @@ public class WebSecurityConfig {
                 // Options - Public en lecture, sécurisé en écriture
                 .requestMatchers(HttpMethod.GET, "/options").permitAll()
                 .requestMatchers(HttpMethod.GET, "/options/**").permitAll()
-
+                
+                .requestMatchers(HttpMethod.POST, "/password-recovery/**").permitAll()
 
                 // Cache - Seulement pour les admins
                 .requestMatchers("/cache/**").hasRole("ADMIN")
 
                 //Tous les autres endpoints nécessitent une authentification ou pour etre plus explicite
                 .requestMatchers("/travel/**").authenticated()
+
 
                 //Tous les autres requêtes nécessitent une authentification
                 .anyRequest().authenticated()

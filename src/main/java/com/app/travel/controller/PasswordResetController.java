@@ -17,17 +17,13 @@ import com.app.travel.service.PasswordResetService;
 
 @RestController
 @RequestMapping("/password-recovery")
-@CrossOrigin
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 public class PasswordResetController {
 	
 	@Autowired
 	private PasswordResetService service;
 
-	/**
-	 * Envoie un email de réinitialisation de mot de passe à l'utilisateur.
-	 * @param request Contient l'email de l'utilisateur.
-	 * @return Réponse indiquant si l'email a été envoyé avec succès ou non.
-	 */
+
 	@PostMapping("/forgot")
 	public ApiResponse<String> forgotPassword(@RequestBody Users request) {
 		try {

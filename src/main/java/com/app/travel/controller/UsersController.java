@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.travel.dto.ApiResponse;
 import com.app.travel.model.Users;
+import com.app.travel.repos.OrderRepository;
 import com.app.travel.repos.UserRepository;
 import com.app.travel.security.JwtUtil;
 import com.app.travel.service.TokenBlacklistService;
 import com.app.travel.utils.ContextUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 @CrossOrigin
 @RestController
@@ -30,6 +32,9 @@ public class UsersController {
 
     @Autowired
     UserRepository repos;
+
+    @Autowired
+    OrderRepository orderRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -175,14 +180,15 @@ public class UsersController {
         }
     }
 
-    /**
-     * Endpoint pour supprimer un utilisateur.
-     * Vérifie les permissions d'accès et gère la suppression de l'utilisateur actuel.
-     *
-     * @param id L'ID de l'utilisateur à supprimer.
-     * @return Un message de succès ou d'erreur.
-     */
+        /**
+         * Endpoint pour supprimer un utilisateur.
+         * Vérifie les permissions d'accès et gère la suppression de l'utilisateur actuel.
+         *
+         * @param id L'ID de l'utilisateur à supprimer.
+         * @return Un message de succès ou d'erreur.
+         */
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable int id, HttpServletRequest request) {
         try {
             Users userToDelete = repos.findById(id).orElse(null);
@@ -203,6 +209,9 @@ public class UsersController {
                 isSelfDeletion = currentUser.getUserId() == userToDelete.getUserId();
             }
 
+            orderRepository.deleteByUserUserId(id);
+
+            // Gérer la blacklist du token pour l'auto-suppression
             if (isSelfDeletion) {
                 String token = jwtUtil.extractTokenFromRequest(request);
                 if (token != null) {
@@ -210,17 +219,18 @@ public class UsersController {
                 }
             }
 
+            // Supprimer l'utilisateur
             repos.deleteById(id);
 
             String message = isSelfDeletion
-                    ? "Votre compte a été supprimé avec succès. Vous êtes maintenant déconnecté."
-                    : "Utilisateur supprimé avec succès";
+                    ? "Votre compte et toutes vos commandes ont été supprimés avec succès. Vous êtes maintenant déconnecté."
+                    : "Utilisateur et ses commandes supprimés avec succès";
 
             return ResponseEntity.ok(ApiResponse.success(message));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur", e.getMessage()));
+                    .body(ApiResponse.error("Erreur lors de la suppression de l'utilisateur: " + e.getMessage()));
         }
     }
 

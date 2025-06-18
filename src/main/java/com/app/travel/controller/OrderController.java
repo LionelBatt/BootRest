@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +40,14 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getAllOrders() {
         try {
             if (!contextUtil.isAdmin()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
-            List<Order> orders = orderRepository.findAll();
+            List<Order> orders = orderRepository.findAllWithDetails();
             return ResponseEntity.ok(ApiResponse.success("Commandes récupérées avec succès", orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -58,6 +60,7 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("/mine")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrders() {
         try {
             Users currentUser = contextUtil.getCurrentUser();
@@ -65,7 +68,7 @@ public class OrderController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Utilisateur non trouvé"));
             }       
-            List<Order> orders = orderRepository.findByUserUserId(currentUser.getUserId());
+            List<Order> orders = orderRepository.findByUserUserIdWithDetails(currentUser.getUserId());
             return ResponseEntity.ok(ApiResponse.success("Vos commandes récupérées avec succès", orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -136,16 +139,17 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getOrderById(@PathVariable int id) {
         try {
 
-            Optional<Order> orderOpt = orderRepository.findById(id);
-            if (!orderOpt.isPresent()) {
+            List<Order> orderList = orderRepository.findByIdWithDetails(id);
+            if (orderList.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
             }
             
-            Order order = orderOpt.get();
+            Order order = orderList.get(0);
             
             if (!contextUtil.canAccessUser(order.getUser())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -195,6 +199,7 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("/users/{userid}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getOrdersByUserId(@PathVariable int userid) {
         try {
 
@@ -203,7 +208,7 @@ public class OrderController {
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));
             }
             
-            List<Order> orders = orderRepository.findByUserUserId(userid);
+            List<Order> orders = orderRepository.findByUserUserIdWithDetails(userid);
             return ResponseEntity.ok(ApiResponse.success("Commandes trouvées pour l'utilisateur: " + userid, orders));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -218,6 +223,7 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("/creationdateafter/{limit}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersCreatedAfter(@PathVariable Date limit) {
         try {
 
@@ -247,6 +253,7 @@ public class OrderController {
      * @return ResponseEntity<ApiResponse<List<Order>>>
      */
     @GetMapping("/tripstartdateafter/{limit}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Order>>> getMyOrdersWithTripStartAfter(@PathVariable Date limit) {
         try {
 

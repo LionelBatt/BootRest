@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -95,41 +94,6 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Erreur lors de la création de la commande"));
-        }
-    }
-
-    /**
-     * Endpoint pour mettre à jour une commande existante
-     * @param id ID de la commande à mettre à jour
-     * @param order Commande mise à jour
-     * @return ResponseEntity<ApiResponse<Order>>
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Order>> updateOrder(@PathVariable int id, @RequestBody Order order) {
-        try {
-            Optional<Order> existingOrderOpt = orderRepository.findById(id);
-            if (!existingOrderOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Commande non trouvée avec l'ID: " + id));
-            }
-            Order existingOrder = existingOrderOpt.get();
-            
-            if (!contextUtil.canAccessUser(existingOrder.getUser())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
-            }
-
-            order.setOrderId(id);
-
-            if (!contextUtil.isAdmin()) {
-                order.setUser(existingOrder.getUser());
-            }
-            
-            Order updatedOrder = orderRepository.save(order);
-            return ResponseEntity.ok(ApiResponse.success("Commande mise à jour avec succès", updatedOrder));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la mise à jour de la commande"));
         }
     }
 

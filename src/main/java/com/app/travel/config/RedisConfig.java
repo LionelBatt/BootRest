@@ -68,14 +68,10 @@ public class RedisConfig {
                 .cacheDefaults(config)
                 .withCacheConfiguration("trips", config.entryTtl(Duration.ofSeconds(30)))
                 .withCacheConfiguration("trip-details", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("trip-search", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("destinations", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("orders", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("stats", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("options", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("option-details", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("options-by-category", config.entryTtl(Duration.ofSeconds(30)))
-                .withCacheConfiguration("options-by-price", config.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration("destinations-continents", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("destinations-countries", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("destinations-cities", config.entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("optionsCache", config.entryTtl(Duration.ofMinutes(5)))
                 .build();
     }
 }

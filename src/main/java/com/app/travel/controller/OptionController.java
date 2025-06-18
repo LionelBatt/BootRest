@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,6 +30,7 @@ public class OptionController {
      * Récupère toutes les options disponibles.
      * @return une liste d'options.
      */
+    @Cacheable(value = "options", key = "'allOptions'")
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Option>>> getAllOptions() {
         try {
@@ -77,29 +79,6 @@ public class OptionController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la recherche par catégorie"));
-        }
-    }
-    /**
-     * Récupère les options par plage de prix.
-     * @param minPrice le prix minimum.
-     * @param maxPrice le prix maximum.
-     * @return une liste d'options dans la plage de prix spécifiée ou un message d'erreur si la plage est invalide.
-     */
-    @GetMapping("/price/{minPrice}/{maxPrice}")
-    public ResponseEntity<ApiResponse<List<Option>>> getOptionsByPriceRange(
-            @PathVariable double minPrice, @PathVariable double maxPrice) {
-        
-        if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("min max invalide : " + minPrice + " - " + maxPrice));
-        }
-        
-        try {
-            List<Option> options = optionService.getOptionsByPriceRange(minPrice, maxPrice);
-            return ResponseEntity.ok(ApiResponse.success("Options entre : " + minPrice + "€ - " + maxPrice + "€", options));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par prix"));
         }
     }
 }

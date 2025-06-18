@@ -85,7 +85,6 @@ public class UsersController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Aucun utilisateur trouvé avec l'id: " + id));
             }
-
             if (!contextUtil.canAccessUser(user)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Cette ressource n'est pas accessible"));

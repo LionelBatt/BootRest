@@ -218,26 +218,6 @@ public class TripController {
                     .body(ApiResponse.error("Erreur lors de la recherche par pays de destination"));
         }
     }
-    /**
-     * Endpoint pour récupérer les voyages par utilisateur
-     * @param userId
-     * @return ResponseEntity<ApiResponse<List<Trip>>>
-     */
-    @GetMapping("/user/{userId}")
-    @Transactional(readOnly = true)
-    public ResponseEntity<ApiResponse<List<Trip>>> findByUserId(@PathVariable Integer userId) {
-        try {
-            if (!contextUtil.canAccessUser(userId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(ApiResponse.error("Cette ressource n'est pas accessible"));
-            }
-            List<Trip> trips = tripService.getTripsByUser(userId);
-            return ResponseEntity.ok(ApiResponse.success("Voyages de l'utilisateur: " + userId, trips));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Erreur lors de la recherche par utilisateur"));
-        }
-    }
 
     /**
      * Offer filter option on trip research in sql database.

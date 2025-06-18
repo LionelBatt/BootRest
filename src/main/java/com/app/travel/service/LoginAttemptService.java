@@ -1,12 +1,13 @@
 package com.app.travel.service;
 
-import com.app.travel.model.LoginAttempt;
-import com.app.travel.repos.LoginAttemptRepository;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import com.app.travel.model.LoginAttempt;
+import com.app.travel.repos.LoginAttemptRepository;
 
 @Service
 @Transactional

@@ -24,17 +24,16 @@ public class TripService {
         return tripRepository.findAll();
     }
 
-    @Cacheable(value = "destinations", key = "'continent:' + #continent")
     public List<Trip> getTripsByContinent(Continent continent) {
         return tripRepository.findByDestinationContinent(continent);
     }
 
-    @Cacheable(value = "destinations", key = "'country:' + #country")
+
     public List<Trip> getTripsByCountry(Country country) {
         return tripRepository.findByDestinationCountry(country);
     }
 
-    @Cacheable(value = "destinations", key = "'city:' + #city")
+
     public List<Trip> getTripsByCity(City city) {
         return tripRepository.findByDestinationCity(city);
     }
@@ -49,17 +48,14 @@ public class TripService {
         return tripRepository.findByCharacter(character);
     }
 
-    @Cacheable(value = "trips", key = "'user:' + #userId")
     public List<Trip> getTripsByUser(Integer userId) {
         return tripRepository.findByUser_UserId(userId);
     }
 
-    @Cacheable(value = "trip-search", key = "#destinationContinent + ':' + #destinationCountry + ':' + #destinationCity + ':' + #minimumDuration + ':' + #maximumDuration + ':' + #optionsIds + ':' + #prixmin + ':' + #prixmax")
     public List<Trip> searchTripsWithFilter(Continent destinationContinent, Country destinationCountry,
             City destinationCity, int minimumDuration, int maximumDuration, List<Integer> optionsIds, int prixmin,
             int prixmax) {
         boolean optionsEmpty = optionsIds == null || optionsIds.isEmpty();
-        System.out.println("SERVICE $$$$$$$$$$$$                 || " + optionsIds);
         return tripRepository.findByDestinationCityWithOptions(destinationContinent, destinationCountry,
                 destinationCity,
                 minimumDuration, maximumDuration, optionsIds, optionsEmpty, prixmin, prixmax);

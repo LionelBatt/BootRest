@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
-    
+
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
 

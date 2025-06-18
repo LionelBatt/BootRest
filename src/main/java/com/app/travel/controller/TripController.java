@@ -303,6 +303,8 @@ public class TripController {
                     .body(ApiResponse.error("Le prix minimum ne peut pas être supérieur au prix maximum"));
             }
             
+            optionsid = (optionsid.equalsIgnoreCase("-1"))? "": optionsid;
+
             // Recherche avec les filtres
             List<Trip> trips = tripService.searchTripsWithFilter(
                 destinationCont, destinationCount, destinationCit, 

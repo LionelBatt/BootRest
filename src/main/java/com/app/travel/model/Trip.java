@@ -31,16 +31,20 @@ public class Trip implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
+    
     @Enumerated(EnumType.STRING)
+    @Column(name = "destination_country")
     private Country destinationCountry;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "destination_continent")
     private Continent destinationContinent;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "destination_city")
     private City destinationCity;
 
+    @Column(name = "minimum_duration")
     private int minimumDuration;
 
     @Column(name = "description")

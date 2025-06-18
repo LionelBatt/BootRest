@@ -254,8 +254,7 @@ public class TripController {
     @GetMapping("/filter/{destinationContinent}/{destinationCountry}/{destinationCity}/{minimumDuration}/{maximumDuration}/{option1id}/{option2id}/{option3id}/{prixmin}/{prixmax}")
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Trip>>> findBasedOnFilter(@PathVariable String destinationContinent, @PathVariable String destinationCountry,@PathVariable String destinationCity, 
-    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable int option1id, @PathVariable int option2id, @PathVariable int option3id, @PathVariable int prixmin, 
-    @PathVariable int prixmax) {
+    @PathVariable int minimumDuration, @PathVariable int maximumDuration, @PathVariable String optionsid, @PathVariable int prixmin, @PathVariable int prixmax) {
         try {
             // Validation et conversion des paramètres
             Continent destinationCont = null;
@@ -306,16 +305,11 @@ public class TripController {
                     .body(ApiResponse.error("Le prix minimum ne peut pas être supérieur au prix maximum"));
             }
             
-            // Conversion des options (0 = non spécifié, remplacé par -1 pour éviter les conflits)
-            int opt1 = (option1id == 0) ? -1 : option1id;
-            int opt2 = (option2id == 0) ? -1 : option2id;
-            int opt3 = (option3id == 0) ? -1 : option3id;
-            
             // Recherche avec les filtres
             List<Trip> trips = tripService.searchTripsWithFilter(
                 destinationCont, destinationCount, destinationCit, 
                 minimumDuration, maximumDuration, 
-                opt1, opt2, opt3, 
+                optionsid, 
                 prixmin, prixmax
             );
             
@@ -326,10 +320,8 @@ public class TripController {
             if (destinationCit != null) filterInfo.append("Ville=").append(destinationCit).append(", ");
             filterInfo.append("Durée=[").append(minimumDuration).append("-").append(maximumDuration).append("], ");
             filterInfo.append("Prix=[").append(prixmin).append("€-").append(prixmax).append("€]");
-            if (option1id != 0 || option2id != 0 || option3id != 0) {
-                filterInfo.append(", Options=[").append(option1id).append(",").append(option2id).append(",").append(option3id).append("]");
-            }
-            
+            filterInfo.append(", Options=[").append(optionsid).append("]");
+                        
             return ResponseEntity.ok(ApiResponse.success(filterInfo.toString() + " - " + trips.size() + " résultat(s)", trips));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

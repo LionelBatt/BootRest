@@ -17,7 +17,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Origines autorisées - spécifiquement votre frontend React
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://127.0.0.1:3000"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         
         // Méthodes HTTP autorisées
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

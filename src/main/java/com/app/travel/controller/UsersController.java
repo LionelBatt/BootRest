@@ -152,28 +152,47 @@ public class UsersController {
      * Endpoint pour mettre à jour un utilisateur par son ID.
      * Accessible uniquement par les administrateurs.
      *
-     * @param id L'ID de l'utilisateur à mettre à jour.
+     * @param id   L'ID de l'utilisateur à mettre à jour.
      * @param user Les nouvelles informations de l'utilisateur.
      * @return L'utilisateur mis à jour ou un message d'erreur.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Users>> updateUser(@PathVariable int id, @RequestBody Users user) {
+    public ResponseEntity<ApiResponse<Users>> updateUser(@PathVariable int id, @RequestBody Users updatedData) {
         try {
-            // Récupérer l'utilisateur courant      
             if (!contextUtil.isAdmin()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Accès refusé : privilèges administrateur requis"));
-            }  
+            }
+
             Users existingUser = repos.findById(id).orElse(null);
             if (existingUser == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Utilisateur non trouvé avec l'ID: " + id));
             }
-            user.setUserId(id);
-            Users updatedUser = repos.save(user);
-            return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", updatedUser));
-            
+
+            // Mise à jour des champs simples uniquement s'ils sont non null
+            if (updatedData.getUsername() != null && updatedData.getUsername() != "")
+                existingUser.setUsername(updatedData.getUsername());
+            if (updatedData.getEmail() != null && updatedData.getEmail() != "")
+                existingUser.setEmail(updatedData.getEmail());
+            if (updatedData.getName() != null && updatedData.getName() != "")
+                existingUser.setName(updatedData.getName());
+            if (updatedData.getSurname() != null && updatedData.getSurname() != "")
+                existingUser.setSurname(updatedData.getSurname());
+            if (updatedData.getPhoneNumber() != null && updatedData.getPhoneNumber() != "")
+                existingUser.setPhoneNumber(updatedData.getPhoneNumber());
+            if (updatedData.getAddress() != null && updatedData.getAddress() != "")
+                existingUser.setAddress(updatedData.getAddress());
+
+            // On ignore cardInfo, bookmarks et orders ici — à gérer dans des endpoints
+            // séparés si besoin
+
+            Users saved = repos.save(existingUser);
+
+            return ResponseEntity.ok(ApiResponse.success("Utilisateur mis à jour avec succès", saved));
+
         } catch (Exception e) {
+            e.printStackTrace(); // Pour voir l'erreur dans la console
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Erreur lors de la mise à jour des informations"));
         }

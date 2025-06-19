@@ -63,12 +63,6 @@ export REDIS_PASSWORD=votre_mot_de_passe_redis_sécurisé
 
 L'application utilise Redis pour améliorer les performances :
 
-- **Cache des voyages** : Liste complète et détails individuels (TTL: 3 minutes)
-- **Cache des destinations** : Par continent, pays, ville (TTL: 5 minutes)
-- **Cache des options** : Par catégorie et fourchette de prix (TTL: 3-5 minutes)
-- **Cache des recherches** : Résultats de recherche par caractère (TTL: 1 minute)
-- **Cache des statistiques** : Métriques globales (TTL: 1 minute)
-
 #### 📊 Architecture Cache
 
 ```

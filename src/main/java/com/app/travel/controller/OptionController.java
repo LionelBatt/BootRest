@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,7 +29,7 @@ public class OptionController {
      * Récupère toutes les options disponibles.
      * @return une liste d'options.
      */
-    @Cacheable(value = "options-cache", key = "'allOptions'")
+    //@Cacheable(value = "options-cache", key = "'allOptions'")
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<Option>>> getAllOptions() {
         try {

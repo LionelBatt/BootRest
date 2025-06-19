@@ -17,7 +17,7 @@ import com.app.travel.service.PasswordResetService;
 
 @RestController
 @RequestMapping("/password-recovery")
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin
 public class PasswordResetController {
 	
 	@Autowired

@@ -10,7 +10,6 @@ Une API REST construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une 
 - **Cache Redis** : Cache haute performance pour optimiser les requêtes fréquentes
 - **Sécurité** : Protection des endpoints avec Spring Security
 - **Base de données** : Intégration MySQL avec JPA/Hibernate
-- **Email** : Service d'envoi d'emails pour confirmations et notifications
 - **Documentation API** : Interface Swagger/OpenAPI intégrée
 - **Validation** : Validation des données d'entrée
 - **Gestion d'erreurs** : Gestion centralisée des exceptions
@@ -58,11 +57,6 @@ export REDIS_HOST=localhost
 export REDIS_PORT=6379
 export REDIS_PASSWORD=votre_mot_de_passe_redis_sécurisé
 
-# Email
-export MAIL_HOST=smtp.gmail.com
-export MAIL_PORT=587
-export MAIL_USER=votre_email@gmail.com
-export MAIL_PASSWORD=votre_mot_de_passe_application
 ```
 
 ### 🗄️ Cache Redis
@@ -171,7 +165,6 @@ docker network create travel-network
 
 # 2. Redis
 docker run -d --name travel-redis \
-  --network travel-network \
   -p 6379:6379 \
   redis:7.2-alpine \
   redis-server --requirepass your_redis_password
@@ -179,7 +172,6 @@ docker run -d --name travel-redis \
 # 3. Application
 docker build -t travel-agency-api .
 docker run -d --name travel-app \
-  --network travel-network \
   -p 8080:8080 \
   -e DB_URL="jdbc:mysql://host.docker.internal:3306/travel_agency" \
   -e DB_USER=root \
@@ -298,11 +290,6 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=your_secure_redis_password_123
 
-# Email
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USER=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
 ```
 
 ## 🏗️ Architecture CI/CD
@@ -373,15 +360,6 @@ docker exec -it travel-redis redis-cli -a your_password
 # Monitoring cache pendant développement
 curl http://localhost:8080/travel/cache/stats | jq
 ```
-
-## 🚀 Performance
-
-### 📊 Métriques typiques
-
-- **Latence cache** : ~0.1ms (local)
-- **Hit ratio** : ~85-90% après montée en charge
-- **Mémoire Redis** : ~300MB (optimisée t2.micro)
-- **Throughput** : ~1000 ops/sec
 
 ## 📄 Licence
 

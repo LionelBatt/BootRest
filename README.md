@@ -1,6 +1,6 @@
 # Travel Agency API
 
-Une API REST construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage avec système de cache Redis optimisé.
+Une API REST construite avec Spring Boot 3.5.16 et Java 25 pour la gestion d'une plateforme e-commerce d'agence de voyage avec système de cache Redis optimisé.
 
 ## 🚀 Fonctionnalités
 
@@ -17,8 +17,8 @@ Une API REST construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une 
 
 ## 🛠️ Technologies utilisées
 
-- **Java 21**
-- **Spring Boot 3.5.0**
+- **Java 25**
+- **Spring Boot 3.5.16**
 - **Spring Security**
 - **Spring Data JPA**
 - **Spring Cache + Redis**
@@ -32,7 +32,7 @@ Une API REST construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une 
 
 ## 📋 Prérequis
 
-- Java 21 ou supérieur
+- Java 25 ou supérieur
 - Maven 3.6+
 - MySQL 8.0+
 - Docker (pour Redis local)
@@ -301,7 +301,7 @@ JUnit   Quality   JAR   Container   Docker Container
 ### 🐳 Infrastructure Docker
 
 - **App Container** :
-  - Image de base : `openjdk:21-jdk-slim`
+  - Image de base : `eclipse-temurin:25-jre`
   - Port exposé : `8080`
   - Utilisateur : `appuser` (non-root)
   - Restart policy : `unless-stopped`

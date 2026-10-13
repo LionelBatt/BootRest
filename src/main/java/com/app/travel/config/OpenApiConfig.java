@@ -20,7 +20,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Travel Agency API")
                         .version("1.0.1")
-                        .description("Une API REST moderne construite avec Spring Boot 3.5.0 et Java 21 pour la gestion d'une plateforme e-commerce d'agence de voyage.")
+                        .description("Une API REST moderne construite avec Spring Boot 3.5.16 et Java 25 pour la gestion d'une plateforme e-commerce d'agence de voyage.")
                         .contact(new Contact()
                                 .name("Travel Agency Team")
                                 .email("contact@travel-agency.com")

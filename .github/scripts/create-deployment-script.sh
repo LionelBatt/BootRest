@@ -107,7 +107,7 @@ echo "✅ JAR téléchargé: $(ls -lh $JAR_FILE)"
 # Créer le Dockerfile
 echo "📝 Création du Dockerfile..."
 cat > Dockerfile << 'DOCKERFILE_END'
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:25-jre
 
 # Installer des outils de diagnostic
 RUN apt-get update && apt-get install -y curl procps && rm -rf /var/lib/apt/lists/*
